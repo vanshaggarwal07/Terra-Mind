@@ -1,4 +1,4 @@
-# Property Digital Twin — Future Intelligence Platform
+# Terra-Mind — Property Digital Twin Platform
 
 Geospatial data-infrastructure platform for the Noida · Greater Noida · Yamuna Expressway · Jewar Airport corridor, with ML forecasting and an LLM explanation layer on top.
 
