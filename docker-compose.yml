@@ -1,0 +1,58 @@
+# Local development infrastructure for the Property Digital Twin.
+#   db    — Postgres 16 + PostGIS + pgvector (primary store, §4/§9)
+#   minio — S3-compatible object storage (raw cache tier, §3.3)
+services:
+  db:
+    # Postgres 16 + PostGIS + pgvector (built from docker/Dockerfile.db).
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.db
+    image: twin-db:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-twin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-twin}
+      POSTGRES_DB: ${POSTGRES_DB:-twin}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/db-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-twin} -d ${POSTGRES_DB:-twin}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${OBJECT_STORAGE_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: create the raw-cache bucket on startup.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ${OBJECT_STORAGE_ACCESS_KEY:-minioadmin} ${OBJECT_STORAGE_SECRET_KEY:-minioadmin} &&
+      mc mb --ignore-existing local/${OBJECT_STORAGE_BUCKET:-twin-raw-cache} &&
+      echo 'bucket ready';
+      "
+
+volumes:
+  db_data:
+  minio_data:

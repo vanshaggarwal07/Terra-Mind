@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "twin-ml"
+version = "0.1.0"
+description = "Prediction engine: feature store, tabular/time-series models, serving (Phase 3)."
+requires-python = ">=3.11"
+dependencies = [
+    "twin-common",
+    "twin-warehouse",
+    "scikit-learn>=1.5",
+    "xgboost>=2.0",
+    "lightgbm>=4.3",
+    "pandas>=2.2",
+    "numpy>=1.26",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ml"]
+
+[tool.hatch.metadata]
+allow-direct-references = true

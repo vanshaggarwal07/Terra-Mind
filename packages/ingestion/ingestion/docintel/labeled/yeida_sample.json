@@ -1,0 +1,26 @@
+[
+  {
+    "text": "The Noida Metro Aqua Line extension to Sector 142 was approved by the authority and is expected to be operational by 2027.",
+    "expected": [{"project_type": "metro", "status": "approved", "expected_year": 2027, "sector": "Sector 142"}]
+  },
+  {
+    "text": "A new expressway link road connecting Sector 150 to the Yamuna Expressway is proposed for completion in 2030.",
+    "expected": [{"project_type": "road", "status": "proposed", "expected_year": 2030, "sector": "Sector 150"}]
+  },
+  {
+    "text": "The Noida International Airport at Jewar is under construction and targeted for 2025.",
+    "expected": [{"project_type": "airport", "status": "under_construction", "expected_year": 2025, "sector": "Jewar"}]
+  },
+  {
+    "text": "A multi-specialty hospital in Sector 137 has been sanctioned with an expected opening in 2028.",
+    "expected": [{"project_type": "hospital", "status": "approved", "expected_year": 2028, "sector": "Sector 137"}]
+  },
+  {
+    "text": "The RRTS rapid rail corridor near Sector 18 is proposed and planned for 2032.",
+    "expected": [{"project_type": "rrts", "status": "proposed", "expected_year": 2032, "sector": "Sector 18"}]
+  },
+  {
+    "text": "A large shopping mall in Sector 18 is now operational as of 2024.",
+    "expected": [{"project_type": "mall", "status": "operational", "expected_year": 2024, "sector": "Sector 18"}]
+  }
+]

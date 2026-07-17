@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "twin-simulation"
+version = "0.1.0"
+description = "What-if simulation engine: mutate InfraEvent state, recompute, diff (Phase 4)."
+requires-python = ">=3.11"
+dependencies = [
+    "twin-common",
+    "twin-warehouse",
+    "twin-ml",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["simulation"]
+
+[tool.hatch.metadata]
+allow-direct-references = true

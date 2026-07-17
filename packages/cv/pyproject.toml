@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "twin-cv"
+version = "0.1.0"
+description = "Satellite change-detection CV pipeline (Phase 4)."
+requires-python = ">=3.11"
+dependencies = [
+    "twin-common",
+    "twin-warehouse",
+    "numpy>=1.26",
+    # torch / rasterio pinned in P4.4 to match the target GPU/runtime.
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["cv"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
