@@ -32,9 +32,9 @@ tmp*/
 .dagster/
 dagster_home/
 
-# Data / artifacts
+# Data / artifacts (root data/ only — do not ignore apps/*/src/data source)
 *.parquet
-data/
+/data/
 models/artifacts/
 *.tif
 *.tiff
