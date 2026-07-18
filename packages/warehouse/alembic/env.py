@@ -50,13 +50,17 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        _ensure_extensions(connection)
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
         )
+        # Run extension creation + migrations inside Alembic's transaction so the
+        # whole thing commits together. (Executing on the connection BEFORE
+        # begin_transaction triggers SQLAlchemy 2.0 autobegin, which leaves the
+        # transaction unmanaged by Alembic and silently rolls back on close.)
         with context.begin_transaction():
+            _ensure_extensions(connection)
             context.run_migrations()
 
 

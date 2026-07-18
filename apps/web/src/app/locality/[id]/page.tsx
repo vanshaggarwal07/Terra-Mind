@@ -16,6 +16,9 @@ import { SECTOR_22D_TIMELINE } from "@/data/sector-22d";
 import { Card } from "@/components/ui/Card";
 import { FutureTimeline } from "@/components/timeline/FutureTimeline";
 import { ScoreCard } from "@/components/score/ScoreCard";
+import { ForecastCard } from "@/components/prediction/ForecastCard";
+import { SimulationPanel } from "@/components/simulation/SimulationPanel";
+import { ConstructionSignals } from "@/components/signals/ConstructionSignals";
 import { ProximityCard } from "@/components/proximity/ProximityCard";
 import { CopilotChat } from "@/components/copilot/CopilotChat";
 import { MapPanel } from "@/components/map/MapPanel";
@@ -92,6 +95,9 @@ export default function LocalityPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {score && <ScoreCard envelope={score} />}
+          {!isPoc && <ForecastCard localityId={id} />}
+          {!isPoc && <SimulationPanel localityId={id} />}
+          {!isPoc && <ConstructionSignals localityId={id} />}
           {proximity && <ProximityCard data={proximity} />}
           <Card title="Ask about this locality">
             <CopilotChat localityId={isPoc ? undefined : id} />

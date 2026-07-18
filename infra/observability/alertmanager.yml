@@ -1,0 +1,22 @@
+# Alertmanager routing (P5.3): critical -> pager/oncall, warnings -> Slack.
+route:
+  receiver: slack
+  group_by: ["alertname", "route"]
+  routes:
+    - matchers: ['severity="critical"']
+      receiver: oncall
+    - matchers: ['route="slack"']
+      receiver: slack
+
+receivers:
+  - name: oncall
+    # Wire real integration keys via env/secret substitution at deploy time.
+    pagerduty_configs:
+      - routing_key: "${PAGERDUTY_ROUTING_KEY}"
+    slack_configs:
+      - api_url: "${SLACK_WEBHOOK_URL}"
+        channel: "#twin-oncall"
+  - name: slack
+    slack_configs:
+      - api_url: "${SLACK_WEBHOOK_URL}"
+        channel: "#twin-alerts"

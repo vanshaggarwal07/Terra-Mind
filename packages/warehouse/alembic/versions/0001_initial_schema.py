@@ -27,26 +27,39 @@ depends_on: str | Sequence[str] | None = None
 
 
 # --- Enum type definitions (created once, reused across tables) ----------------
+# create_type=False: the types are created explicitly in upgrade() via e.create();
+# without this flag, create_table() would try to CREATE TYPE a second time and fail
+# with "type ... already exists".
 SOURCE_CATEGORY = postgresql.ENUM(
     "planning", "metro", "highways", "rrts", "airport", "tenders", "open_data", "rera",
     "air_quality", "flood", "groundwater", "elevation", "satellite", "news", "social", "builder",
-    name="source_category",
+    name="source_category", create_type=False,
 )
-RAW_CACHE_STATUS = postgresql.ENUM("fresh", "stale", "error", name="raw_cache_status")
+RAW_CACHE_STATUS = postgresql.ENUM(
+    "fresh", "stale", "error", name="raw_cache_status", create_type=False
+)
 INFRA_EVENT_TYPE = postgresql.ENUM(
     "metro", "road", "airport", "mall", "school", "hospital", "industrial", "rrts",
     "construction_detected", "other",
-    name="infra_event_type",
+    name="infra_event_type", create_type=False,
 )
 INFRA_EVENT_STATUS = postgresql.ENUM(
-    "proposed", "approved", "under_construction", "operational", name="infra_event_status"
+    "proposed", "approved", "under_construction", "operational",
+    name="infra_event_status", create_type=False,
 )
-SOURCE_TIER = postgresql.ENUM("official", "news", "social", "pattern_cv", name="source_tier")
-REVIEW_ENTITY_TYPE = postgresql.ENUM("infra_event", "builder", "news", name="review_entity_type")
+SOURCE_TIER = postgresql.ENUM(
+    "official", "news", "social", "pattern_cv", name="source_tier", create_type=False
+)
+REVIEW_ENTITY_TYPE = postgresql.ENUM(
+    "infra_event", "builder", "news", name="review_entity_type", create_type=False
+)
 REVIEW_REASON = postgresql.ENUM(
-    "low_confidence", "high_stakes", "unverifiable_source", name="review_reason"
+    "low_confidence", "high_stakes", "unverifiable_source",
+    name="review_reason", create_type=False,
 )
-REVIEW_STATUS = postgresql.ENUM("pending", "approved", "rejected", "edited", name="review_status")
+REVIEW_STATUS = postgresql.ENUM(
+    "pending", "approved", "rejected", "edited", name="review_status", create_type=False
+)
 
 _ALL_ENUMS = [
     SOURCE_CATEGORY, RAW_CACHE_STATUS, INFRA_EVENT_TYPE, INFRA_EVENT_STATUS,

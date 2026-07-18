@@ -211,3 +211,30 @@ class InfraEventRepo:
     def list_verified(self, limit: int = 100) -> list[InfraEvent]:
         stmt = select(InfraEvent).where(InfraEvent.verified.is_(True)).limit(limit)
         return list(self.session.scalars(stmt).all())
+
+    def list_pattern_signals(
+        self, *, limit: int = 100, offset: int = 0
+    ) -> list[InfraEventRead]:
+        """Satellite-derived ``pattern_cv`` signals (blueprint §3.5, P4.5).
+
+        Returned regardless of ``verified`` so the UI can surface them DISTINCTLY
+        from official facts, but always tagged with their low trust tier."""
+        stmt = (
+            select(
+                InfraEvent,
+                Source,
+                geo.lat_of(InfraEvent.geom).label("lat"),
+                geo.lng_of(InfraEvent.geom).label("lng"),
+            )
+            .join(Source, InfraEvent.source_id == Source.id, isouter=True)
+            .where(InfraEvent.source_tier == SourceTier.pattern_cv)
+            .order_by(InfraEvent.first_seen_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        out: list[InfraEventRead] = []
+        for ev, src, lat, lng in self.session.execute(stmt).all():
+            read = to_read(ev, src, lat=lat, lng=lng)
+            read.data_layer = "pattern_cv"  # never "factual" (§3.5)
+            out.append(read)
+        return out

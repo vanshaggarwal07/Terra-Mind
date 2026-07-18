@@ -38,6 +38,7 @@ EXPECTED_TABLES = {
     "infra_event_affects_locality",
     "builder_develops_property",
     "infra_event_approved_by",
+    "model_registry",
 }
 
 
