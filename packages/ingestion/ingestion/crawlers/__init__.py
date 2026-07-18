@@ -16,6 +16,7 @@ from ingestion.crawlers import (  # noqa: E402,F401
     news_crawler,
     nhai_crawler,
     rera_crawler,
+    satellite_fetcher,
     tender_crawler,
     yeida_crawler,
 )

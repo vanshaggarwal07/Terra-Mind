@@ -46,7 +46,15 @@ make dagster    # Dagster dev UI (Phase 1+)
 
 ## Developer commands
 
-`make help` lists everything. Common ones: `make lint`, `make fmt`, `make typecheck`, `make test`, `make migrate`, `make seed`.
+`make help` lists everything. Common ones: `make lint`, `make fmt`, `make typecheck`, `make test`, `make migrate`, `make seed`, `make train` (Phase-3 models), `make train-cv` (Phase-4 segmenter), `make deploy ENV=dev` (Phase-5 IaC).
+
+## Operations, deployment & compliance (Phase 5)
+
+- **Infrastructure as code:** [`infra/`](infra/README.md) — Terraform for managed Postgres (PostGIS+pgvector), object storage, ECS Fargate (API + Dagster), Secrets Manager, GPU **spot** batch, budgets, and observability. `dev`/`prod` via tfvars.
+- **CD:** [`.github/workflows/cd.yml`](.github/workflows/cd.yml) — build → push → gated migration → deploy dev → manual-approval prod, with circuit-breaker rollback.
+- **Observability:** the API `/ops/health`, `/ops/metrics`, `/ops/costs` surface + the web `/ops` dashboard consolidate ingestion, review, ML, cost, and API health. Portable Prometheus/Grafana config in [`infra/observability/`](infra/observability/README.md).
+- **Cost guards:** `common.budget` fails the paid line items (X/social, satellite, GPU) safe at their monthly caps; X/social and satellite/CV are off/gated by default.
+- **Compliance:** [`COMPLIANCE.md`](COMPLIANCE.md) maps every §0/§13 trust guarantee (facts-not-verdicts, advisory bands, human-verified high-stakes, attribution, robots/UA crawling) to its enforcing code and CI guard test. Run `pytest packages -k compliance`.
 
 ## Build order
 

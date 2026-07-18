@@ -43,6 +43,27 @@ class Settings(BaseSettings):
     http_max_retries: int = Field(default=5)
     http_backoff_base_seconds: float = Field(default=0.5)
 
+    # --- Phase 5: feature flags for the expensive/optional line items (§9, §13) ---
+    # Default posture: X/social OFF; satellite + GPU batch gated behind explicit enablement.
+    enable_x_social: bool = Field(default=False)
+    enable_satellite: bool = Field(default=False)
+    enable_gpu_batch: bool = Field(default=False)
+
+    # --- Phase 5: monthly cost caps (USD) — hitting a cap fails safe (§13) ---
+    budget_x_social_usd: float = Field(default=0.0)
+    budget_satellite_usd: float = Field(default=200.0)
+    budget_gpu_usd: float = Field(default=300.0)
+
+    # --- API CORS (which web origins may call the API from a browser) ---
+    # Comma-separated in env, e.g. CORS_ALLOW_ORIGINS="https://app.example.com".
+    cors_allow_origins: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000"
+    )
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_allow_origins.split(",") if o.strip()]
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

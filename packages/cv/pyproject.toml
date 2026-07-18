@@ -5,13 +5,17 @@ build-backend = "hatchling.build"
 [project]
 name = "twin-cv"
 version = "0.1.0"
-description = "Satellite change-detection CV pipeline (Phase 4)."
+description = "Phase 4 satellite change-detection: semantic segmentation + construction-signal pipeline."
 requires-python = ">=3.11"
 dependencies = [
     "twin-common",
     "twin-warehouse",
+    "twin-ml",
     "numpy>=1.26",
-    # torch / rasterio pinned in P4.4 to match the target GPU/runtime.
+    "scikit-learn>=1.4",
+    "scipy>=1.11",
+    "joblib>=1.3",
+    "pydantic>=2.7",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -65,7 +65,16 @@ export type PredictionEnvelope = {
   confidence: number;
   contributing_factors: ContributingFactor[];
   model_version: string;
+  // Phase 3 advisory framing (null for the Phase-2 rule score).
+  prediction_low?: number | null;
+  prediction_high?: number | null;
+  unit?: string | null;
+  horizon?: string | null;
+  disclaimer?: string | null;
+  data_layer?: string;
 };
+
+export type PredictionDomain = "price" | "traffic" | "flood" | "water" | "aqi";
 
 export type BuilderProject = {
   name: string | null;
@@ -161,6 +170,104 @@ export function listInfraEvents(params: {
 // --- score (P2.3) ------------------------------------------------------------
 export function getScore(id: string): Promise<PredictionEnvelope> {
   return getJson(`/localities/${id}/score`);
+}
+
+// --- predictions (P3.8) ------------------------------------------------------
+export function getPrediction(
+  domain: PredictionDomain,
+  params: { localityId?: string; horizonYears?: number } = {},
+): Promise<PredictionEnvelope> {
+  const q = new URLSearchParams();
+  if (params.localityId) q.set("locality_id", params.localityId);
+  if (params.horizonYears) q.set("horizon_years", String(params.horizonYears));
+  const qs = q.toString();
+  return getJson(`/predictions/${domain}${qs ? `?${qs}` : ""}`);
+}
+
+export async function getAllPredictions(
+  localityId?: string,
+): Promise<Record<PredictionDomain, PredictionEnvelope>> {
+  const domains: PredictionDomain[] = ["price", "traffic", "flood", "water", "aqi"];
+  const results = await Promise.all(
+    domains.map((d) => getPrediction(d, { localityId }).catch(() => null)),
+  );
+  const out = {} as Record<PredictionDomain, PredictionEnvelope>;
+  domains.forEach((d, i) => {
+    if (results[i]) out[d] = results[i] as PredictionEnvelope;
+  });
+  return out;
+}
+
+// --- simulation (P4.1/P4.2) --------------------------------------------------
+export type FactorDelta = {
+  factor: string;
+  baseline_weight: number;
+  scenario_weight: number;
+  delta: number;
+};
+
+export type EnvelopeDiff = {
+  metric: string;
+  baseline: PredictionEnvelope;
+  scenario: PredictionEnvelope;
+  prediction_delta: number;
+  low_delta: number | null;
+  high_delta: number | null;
+  confidence_delta: number;
+  factor_deltas: FactorDelta[];
+};
+
+export type SimulationResult = {
+  locality_id: string | null;
+  score: EnvelopeDiff;
+  predictions: Record<string, EnvelopeDiff>;
+  disclaimer: string;
+};
+
+export type EventOverride = {
+  event_id: string;
+  expected_year?: number | null;
+  status?: string | null;
+  remove?: boolean;
+};
+
+export type HypotheticalEvent = {
+  type: string;
+  status?: string;
+  expected_year?: number | null;
+  distance_km?: number | null;
+  confidence?: number;
+};
+
+export type Scenario = {
+  overrides?: EventOverride[];
+  add_events?: HypotheticalEvent[];
+  horizon_years?: number | null;
+  domains?: string[];
+};
+
+export async function simulate(
+  localityId: string,
+  scenario: Scenario,
+): Promise<SimulationResult> {
+  const res = await fetch(`${API_BASE}/simulate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ locality_id: localityId, scenario }),
+  });
+  return json(res);
+}
+
+// --- satellite pattern signals (P4.5) ----------------------------------------
+export type ConstructionSignalList = {
+  data_layer: string;
+  disclaimer: string;
+  total: number;
+  items: InfraEvent[];
+};
+
+export function getConstructionSignals(limit = 100): Promise<ConstructionSignalList> {
+  return getJson(`/signals/construction?limit=${limit}`);
 }
 
 // --- proximity (P2.5) --------------------------------------------------------

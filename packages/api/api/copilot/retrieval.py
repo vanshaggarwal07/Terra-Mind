@@ -10,7 +10,7 @@ from typing import Protocol
 
 from sqlalchemy.orm import Session
 
-from api.copilot.schemas import ChunkHit, RetrievedContext
+from api.copilot.schemas import ChunkHit, PredictionContext, RetrievedContext
 from common.logging import get_logger
 from warehouse.models import Source
 from warehouse.repositories import (
@@ -31,10 +31,18 @@ class Retriever(Protocol):
 class DBRetriever:
     """Retrieves from Postgres + pgvector. Embeds the query via the LLM client."""
 
-    def __init__(self, session: Session, *, embedder=None, top_k: int = 6) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        session: Session,
+        *,
+        embedder=None,  # noqa: ANN001
+        top_k: int = 6,
+        prediction_provider=None,  # noqa: ANN001 - (locality_id) -> list[PredictionContext]
+    ) -> None:
         self.session = session
         self.top_k = top_k
         self._embedder = embedder
+        self._prediction_provider = prediction_provider
 
     def _embed(self, text: str) -> list[float] | None:
         try:
@@ -62,6 +70,7 @@ class DBRetriever:
         if locality is not None:
             ctx.locality = loc_repo.get_read(locality.id)
             ctx.facts = infra_repo.affecting_locality(locality.id)
+            ctx.predictions = self._predictions_for(locality.id)
 
         # Builder mention
         builders = BuilderRepo(self.session).search_by_name(query)
@@ -75,6 +84,16 @@ class DBRetriever:
             ctx.chunks = [self._chunk_hit(c) for c in chunks]
         return ctx
 
+    def _predictions_for(self, locality_id: str) -> list[PredictionContext]:
+        """Attach served ML forecasts for the locality (P3.9). Degrades to [] if
+        the models aren't trained/available — the copilot still answers on facts."""
+        provider = self._prediction_provider or _default_prediction_provider
+        try:
+            return provider(locality_id)
+        except Exception as exc:  # noqa: BLE001 - forecasts are optional context
+            log.warning("copilot_predictions_failed", error=str(exc))
+            return []
+
     def _chunk_hit(self, chunk) -> ChunkHit:  # noqa: ANN001
         source = self.session.get(Source, chunk.source_id) if chunk.source_id else None
         return ChunkHit(
@@ -86,6 +105,20 @@ class DBRetriever:
                 source_document=(source.base_url if source else None),
             ),
         )
+
+
+def _default_prediction_provider(locality_id: str) -> list[PredictionContext]:
+    """Serve price/aqi/flood forecasts for the locality when models are trained."""
+    from api.predictions import get_service, predict_for_locality
+
+    service = get_service()
+    out: list[PredictionContext] = []
+    for domain in ("price", "aqi", "flood"):
+        if not service.available(domain):
+            continue
+        env = predict_for_locality(domain, locality_id=locality_id)
+        out.append(PredictionContext(domain=domain, envelope=env))
+    return out
 
 
 def _likely_place(query: str) -> str:

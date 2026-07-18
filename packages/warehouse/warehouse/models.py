@@ -221,6 +221,37 @@ class GovBody(Base):
     jurisdiction: Mapped[str | None] = mapped_column(String(255))
 
 
+class ModelRegistryEntry(Base):
+    """Versioned metadata for a trained Phase-3 model (blueprint §5, P3.2).
+
+    Artifacts live in object storage / the filesystem registry; this row is the
+    queryable index (metrics, calibration, feature-set version) so a served
+    prediction is always traceable to a reproducible model version."""
+
+    __tablename__ = "model_registry"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    domain: Mapped[str] = mapped_column(String(40), nullable=False)  # price/traffic/flood/...
+    model_version: Mapped[str] = mapped_column(String(120), nullable=False)
+    feature_set_version: Mapped[str] = mapped_column(String(120), nullable=False)
+    algorithm: Mapped[str | None] = mapped_column(String(120))
+    unit: Mapped[str | None] = mapped_column(String(60))
+    artifact_key: Mapped[str | None] = mapped_column(Text)  # object-storage / fs path
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
+    calibration: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
+    synthetic: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    trained_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("domain", "model_version", name="uq_model_registry_domain_version"),
+        Index("ix_model_registry_domain_active", "domain", "is_active"),
+    )
+
+
 class ReviewQueue(Base):
     """Human-in-the-loop queue (blueprint §3.4.4). Low-confidence or high-stakes
     extractions land here and must be human-approved before going public."""
@@ -313,6 +344,7 @@ __all__ = [
     "InfraEvent",
     "Builder",
     "GovBody",
+    "ModelRegistryEntry",
     "ReviewQueue",
     "DocChunk",
     "InfraEventAffectsLocality",

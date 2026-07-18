@@ -48,7 +48,12 @@ class CopilotService:
         user = build_user_prompt(query, context_block)
         raw = self._get_answerer().complete_text(SYSTEM_PROMPT, user, temperature=0.0)
 
-        safe = guardrails.enforce(raw, touches_builder=ctx.builder is not None)
+        served = _served_numbers(ctx)
+        safe = guardrails.enforce(
+            raw,
+            touches_builder=ctx.builder is not None,
+            served_predictions=served or None,
+        )
         refused = safe.strip().startswith(REFUSAL) or REFUSAL.lower() in safe.lower()
         return CopilotAnswer(
             answer=safe,
@@ -67,3 +72,14 @@ class CopilotService:
 
     def context_for(self, query: str, *, locality_id: str | None = None) -> RetrievedContext:
         return self.retriever.retrieve(query, locality_id=locality_id)
+
+
+def _served_numbers(ctx: RetrievedContext) -> list[float]:
+    """The exact band values the copilot is allowed to quote (§5/§6)."""
+    served: list[float] = []
+    for pc in ctx.predictions:
+        env = pc.envelope
+        for v in (env.prediction, env.prediction_low, env.prediction_high):
+            if v is not None:
+                served.append(float(v))
+    return served

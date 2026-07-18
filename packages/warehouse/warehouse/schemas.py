@@ -166,9 +166,26 @@ class PredictionEnvelope(BaseModel):
 
     The UI reads ``contributing_factors`` directly, so the 'why' can never drift
     from the number. Used by the rule-weighted score (Phase 2) and every ML model
-    (Phase 3)."""
+    (Phase 3).
+
+    Advisory ML numbers (price/traffic/flood/water/AQI) must ship as a *band*, not
+    a bare point number (§5, §13). The optional ``prediction_low``/``prediction_high``
+    express that band; the rule-weighted score leaves them ``None``. The prediction
+    serving API refuses to emit an advisory number without a band + disclaimer."""
 
     prediction: float
     confidence: float
     contributing_factors: list[ContributingFactor] = Field(default_factory=list)
     model_version: str
+
+    # --- Phase 3 advisory framing (optional; the Phase-2 score leaves these None) ---
+    prediction_low: float | None = None
+    prediction_high: float | None = None
+    unit: str | None = None  # e.g. "INR/sqft", "AQI", "vehicles/hour", "risk 0-1"
+    horizon: str | None = None  # e.g. "1-5yr" (banded) or "10yr+" (directional only)
+    disclaimer: str | None = None
+    data_layer: str = "prediction"  # distinguishes ML/advisory output from "factual"
+
+    def has_band(self) -> bool:
+        """True when a real interval is present (required for advisory numbers)."""
+        return self.prediction_low is not None and self.prediction_high is not None

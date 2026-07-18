@@ -39,6 +39,10 @@ models/artifacts/
 *.tif
 *.tiff
 
+# Phase 3 ML artifacts (trained models + materialized features)
+.model_registry/
+/feature_store/
+
 # OS / editor
 .DS_Store
 .idea/

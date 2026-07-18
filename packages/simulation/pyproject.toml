@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "twin-simulation"
 version = "0.1.0"
-description = "What-if simulation engine: mutate InfraEvent state, recompute, diff (Phase 4)."
+description = "Phase 4 what-if simulation: mutate graph state -> recompute Phase-3 predictions -> diff."
 requires-python = ">=3.11"
 dependencies = [
     "twin-common",
     "twin-warehouse",
-    "twin-ml",
+    "pydantic>=2.7",
 ]
 
 [tool.hatch.build.targets.wheel]

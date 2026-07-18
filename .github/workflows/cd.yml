@@ -1,0 +1,112 @@
+name: CD
+
+# Continuous delivery (Phase 5 P5.2): build + push images, run a gated migration,
+# deploy to dev automatically, and promote to prod behind a manual approval gate.
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+
+permissions:
+  id-token: write # OIDC to assume the AWS deploy role (no static creds)
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - { name: api, dockerfile: docker/Dockerfile.api, context: . }
+          - { name: dagster, dockerfile: docker/Dockerfile.dagster, context: . }
+          - { name: web, dockerfile: apps/web/Dockerfile, context: apps/web }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push ${{ matrix.image.name }}
+        run: |
+          IMAGE="$ECR_REGISTRY/twin-${{ matrix.image.name }}:${GITHUB_SHA::12}"
+          docker build -f ${{ matrix.image.dockerfile }} -t "$IMAGE" ${{ matrix.image.context }}
+          docker push "$IMAGE"
+
+  # --- Migration gate: a failing migration BLOCKS the deploy (P5.2) ---
+  migrate-dev:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          pip install ./packages/common ./packages/warehouse
+      - name: Alembic upgrade (reversible, gated)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: alembic -c packages/warehouse/alembic.ini upgrade head
+
+  deploy-dev:
+    needs: migrate-dev
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Roll out new task definitions (circuit-breaker auto-rollback)
+        run: |
+          for svc in api dagster; do
+            aws ecs update-service --cluster twin-dev-cluster \
+              --service "twin-dev-$svc" --force-new-deployment
+          done
+          aws ecs wait services-stable --cluster twin-dev-cluster \
+            --services twin-dev-api twin-dev-dagster
+
+  # --- Prod promotion: requires manual approval (GitHub Environment gate) ---
+  migrate-prod:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: prod # protected: reviewers must approve before this runs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ./packages/common ./packages/warehouse
+      - name: Alembic upgrade (prod, gated)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: alembic -c packages/warehouse/alembic.ini upgrade head
+
+  deploy-prod:
+    needs: migrate-prod
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Roll out prod (circuit-breaker auto-rollback on failure)
+        run: |
+          for svc in api dagster; do
+            aws ecs update-service --cluster twin-prod-cluster \
+              --service "twin-prod-$svc" --force-new-deployment
+          done
+          aws ecs wait services-stable --cluster twin-prod-cluster \
+            --services twin-prod-api twin-prod-dagster
