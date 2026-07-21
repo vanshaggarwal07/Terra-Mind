@@ -1,8 +1,8 @@
 import type { Citation as CitationType } from "@/lib/api";
 
 /**
- * Inline source link + fetch date (blueprint §0: cite sources).
- * Used by facts, the builder card, and copilot answers.
+ * Inline source citation — every fact, builder record, and copilot answer uses this.
+ * Design system §5: "cite sources" is non-negotiable.
  */
 export function Citation({
   citation,
@@ -18,16 +18,21 @@ export function Citation({
   const prefix = index !== undefined ? `[${index}] ` : "";
 
   return (
-    <span className="citation">
+    <span className="inline-flex items-center gap-1 text-[11px] text-text-low font-mono">
       {prefix}
       {citation.source_document ? (
-        <a href={citation.source_document} target="_blank" rel="noreferrer">
+        <a
+          href={citation.source_document}
+          target="_blank"
+          rel="noreferrer"
+          className="text-cyan hover:text-cyan/80 underline underline-offset-2 focus-brass"
+        >
           {label}
         </a>
       ) : (
         <span>{label}</span>
       )}
-      {asOf ? <span className="muted"> · as of {asOf}</span> : null}
+      {asOf && <span className="text-text-low/60">· {asOf}</span>}
     </span>
   );
 }

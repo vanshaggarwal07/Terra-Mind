@@ -93,7 +93,11 @@ export function CorridorMap({ height = 520, focusLocalityId }: Props) {
   }, [localities, events, focusLocalityId, router]);
 
   if (error) {
-    return <div className="card muted">Could not load map data: {error}</div>;
+    return (
+      <div className="bg-ink-2 border border-white/10 rounded-card p-4 text-sm text-text-low">
+        Could not load map data: {error}
+      </div>
+    );
   }
 
   if (!MAPBOX_TOKEN) {
@@ -103,7 +107,7 @@ export function CorridorMap({ height = 520, focusLocalityId }: Props) {
   }
 
   return (
-    <div style={{ position: "relative", height, borderRadius: 12, overflow: "hidden" }}>
+    <div style={{ position: "relative", height, borderRadius: 3, overflow: "hidden" }}>
       <DeckGL
         initialViewState={INITIAL_VIEW}
         controller
@@ -139,18 +143,19 @@ function NoTokenFallback({
   events: InfraEvent[];
 }) {
   return (
-    <div className="card">
-      <strong>Map preview</strong>
-      <p className="muted" style={{ marginTop: 4 }}>
-        Set <code>NEXT_PUBLIC_MAPBOX_TOKEN</code> to render the interactive
-        Deck.gl + Mapbox corridor map. Showing a data summary meanwhile.
+    <div className="bg-ink-2 border border-white/10 rounded-card p-4">
+      <div className="font-display font-medium text-sm text-text-hi mb-2">
+        Map preview
+      </div>
+      <p className="text-sm text-text-low">
+        Set <code className="font-mono text-xs text-cyan">NEXT_PUBLIC_MAPBOX_TOKEN</code> to render the
+        interactive Deck.gl + Mapbox corridor map.
       </p>
       {loading ? (
-        <p className="muted">Loading…</p>
+        <p className="font-mono text-xs text-text-low mt-2">Loading…</p>
       ) : (
-        <p className="muted">
+        <p className="font-mono text-xs text-text-low mt-2">
           {localities.length} localities · {events.length} verified infra events
-          in the corridor.
         </p>
       )}
     </div>

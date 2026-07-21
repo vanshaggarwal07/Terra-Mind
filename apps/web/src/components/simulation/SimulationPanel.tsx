@@ -8,17 +8,16 @@ import {
 } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
 import { Disclaimer } from "@/components/trust/Disclaimer";
+import { cn } from "@/lib/cn";
 
 /**
  * What-if simulation panel (blueprint §7, P4.2).
- *
- * Builds a hypothetical scenario (add a metro, choose how near/soon it lands),
- * calls /simulate, and renders baseline vs scenario with factor-level deltas. The
- * hypothetical nature + disclaimer are always explicit; nothing is persisted.
+ * Simulated results are ALWAYS visually distinct from live predictions —
+ * dashed band indicator, "hypothetical" badge, no live data styling.
  */
 function fmt(n: number | null | undefined, unit?: string | null): string {
   if (n === null || n === undefined) return "—";
-  const r = Math.abs(n) >= 100 ? Math.round(n).toLocaleString() : n.toFixed(2);
+  const r = Math.abs(n) >= 100 ? Math.round(n).toLocaleString("en-IN") : n.toFixed(2);
   return unit ? `${r} ${unit}` : r;
 }
 
@@ -26,40 +25,56 @@ function DiffRow({ label, diff }: { label: string; diff: EnvelopeDiff }) {
   const { baseline, scenario, prediction_delta } = diff;
   const unit = scenario.unit;
   const up = prediction_delta > 0;
-  const flat = prediction_delta === 0;
-  const band = (e: typeof baseline) =>
-    e.prediction_low !== null && e.prediction_low !== undefined
+  const flat = Math.abs(prediction_delta) < 0.001;
+
+  const bandStr = (e: typeof baseline) =>
+    e.prediction_low != null
       ? `${fmt(e.prediction_low, unit)} – ${fmt(e.prediction_high, unit)}`
       : fmt(e.prediction, unit);
 
   return (
-    <li style={{ padding: "8px 0", borderBottom: "1px solid var(--border,#eee)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <strong>{label}</strong>
-        <span style={{ color: flat ? "var(--muted,#888)" : up ? "#0a7d33" : "#b00020" }}>
-          {flat ? "no change" : `${up ? "▲" : "▼"} ${fmt(Math.abs(prediction_delta), unit)}`}
+    <div className="py-3 border-b border-white/[0.06] last:border-0">
+      <div className="flex justify-between items-center mb-1">
+        <span className="font-display font-medium text-sm text-text-hi capitalize">
+          {label.replace(/_/g, " ")}
+        </span>
+        {/* Delta — colored by direction; dashed to signal "hypothetical" */}
+        <span
+          className={cn(
+            "font-mono text-sm font-medium",
+            flat ? "text-text-low" : up ? "text-moss" : "text-clay",
+          )}
+        >
+          {flat
+            ? "no change"
+            : `${up ? "▲" : "▼"} ${fmt(Math.abs(prediction_delta), unit)}`}
         </span>
       </div>
-      <div className="muted" style={{ fontSize: "0.78rem" }}>
-        baseline {band(baseline)} → scenario {band(scenario)}
+      <div className="text-[11px] text-text-low font-mono">
+        baseline {bandStr(baseline)}{" "}
+        <span className="text-text-low/50 mx-1">→ scenario</span>{" "}
+        {/* Dashed underline on scenario value = visually distinct from live */}
+        <span className="border-b border-dashed border-brass/50 pb-px">
+          {bandStr(scenario)}
+        </span>
       </div>
-      {diff.factor_deltas.filter((f) => Math.abs(f.delta) > 0.001).slice(0, 3).length > 0 && (
-        <div className="muted" style={{ fontSize: "0.72rem", marginTop: 2 }}>
+      {diff.factor_deltas.filter((f) => Math.abs(f.delta) > 0.001).length > 0 && (
+        <div className="text-[11px] text-text-low mt-1">
           drivers:{" "}
           {diff.factor_deltas
             .filter((f) => Math.abs(f.delta) > 0.001)
             .slice(0, 3)
-            .map((f) => `${f.factor} (${f.delta > 0 ? "+" : ""}${f.delta})`)
+            .map((f) => `${f.factor} (${f.delta > 0 ? "+" : ""}${f.delta.toFixed(2)})`)
             .join(", ")}
         </div>
       )}
-    </li>
+    </div>
   );
 }
 
 export function SimulationPanel({ localityId }: { localityId: string }) {
   const [distanceKm, setDistanceKm] = useState(1.0);
-  const [status, setStatus] = useState("operational");
+  const [status, setStatus] = useState("approved");
   const [year, setYear] = useState(2028);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,7 +86,12 @@ export function SimulationPanel({ localityId }: { localityId: string }) {
     try {
       const res = await simulate(localityId, {
         add_events: [
-          { type: "metro", status, expected_year: year, distance_km: distanceKm },
+          {
+            type: "metro",
+            status,
+            expected_year: year,
+            distance_km: distanceKm,
+          },
         ],
         domains: ["price", "aqi", "flood"],
       });
@@ -84,72 +104,119 @@ export function SimulationPanel({ localityId }: { localityId: string }) {
   }
 
   return (
-    <Card title="What-if simulation">
-      <p className="muted" style={{ fontSize: "0.8rem", marginTop: 0 }}>
+    <Card title="04 — What-if simulation">
+      {/* Hypothetical label — always visible */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="font-mono text-[10px] text-brass border border-brass/30 rounded-sm px-1.5 py-0.5">
+          hypothetical · not a prediction
+        </span>
+        <span className="text-[11px] text-text-low">
+          nothing is saved
+        </span>
+      </div>
+
+      <p className="text-sm text-text-mid font-voice italic mb-5">
         Explore how forecasts would shift IF a new metro landed nearby.
       </p>
 
-      <label style={{ display: "block", fontSize: "0.8rem", marginBottom: 8 }}>
-        Metro distance: <strong>{distanceKm.toFixed(1)} km</strong>
-        <input
-          type="range"
-          min={0.3}
-          max={5}
-          step={0.1}
-          value={distanceKm}
-          onChange={(e) => setDistanceKm(Number(e.target.value))}
-          style={{ width: "100%" }}
-        />
-      </label>
-
-      <div style={{ display: "flex", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
-        <label style={{ fontSize: "0.8rem" }}>
-          Status{" "}
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="proposed">proposed</option>
-            <option value="approved">approved</option>
-            <option value="under_construction">under construction</option>
-            <option value="operational">operational</option>
-          </select>
-        </label>
-        <label style={{ fontSize: "0.8rem" }}>
-          Expected year{" "}
+      {/* Sliders */}
+      <div className="space-y-4 mb-5">
+        <label className="block">
+          <span className="text-xs text-text-low uppercase tracking-widest mb-1.5 block">
+            Metro distance: <span className="text-brass-light font-mono">{distanceKm.toFixed(1)} km</span>
+          </span>
           <input
-            type="number"
-            min={2026}
-            max={2045}
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            style={{ width: 80 }}
+            type="range"
+            min={0.3}
+            max={5}
+            step={0.1}
+            value={distanceKm}
+            onChange={(e) => setDistanceKm(Number(e.target.value))}
+            className="w-full focus-brass"
+            aria-label={`Metro distance: ${distanceKm.toFixed(1)} km`}
           />
         </label>
+
+        <div className="grid grid-cols-2 gap-4">
+          <label className="block">
+            <span className="text-xs text-text-low uppercase tracking-widest mb-1.5 block">
+              Status
+            </span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className={cn(
+                "w-full bg-ink-3 border border-white/10 rounded-card",
+                "px-3 py-2 text-sm text-text-hi",
+                "focus:outline-none focus:border-brass/50",
+              )}
+              aria-label="Metro approval status"
+            >
+              <option value="proposed">proposed</option>
+              <option value="approved">approved</option>
+              <option value="under_construction">under construction</option>
+              <option value="operational">operational</option>
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="text-xs text-text-low uppercase tracking-widest mb-1.5 block">
+              Expected year
+            </span>
+            <input
+              type="number"
+              min={2026}
+              max={2045}
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              className={cn(
+                "w-full bg-ink-3 border border-white/10 rounded-card",
+                "px-3 py-2 text-sm text-text-hi font-mono",
+                "focus:outline-none focus:border-brass/50",
+              )}
+              aria-label="Expected year for metro"
+            />
+          </label>
+        </div>
       </div>
 
-      <button className="tab" onClick={run} disabled={loading}>
+      <button
+        onClick={run}
+        disabled={loading}
+        className={cn(
+          "px-5 py-2.5 bg-brass text-ink font-display font-semibold text-sm rounded-card",
+          "transition-opacity hover:opacity-90 focus-brass",
+          "disabled:opacity-40 disabled:cursor-not-allowed",
+        )}
+      >
         {loading ? "Recomputing…" : "Run scenario"}
       </button>
 
       {error && (
-        <p className="muted" style={{ color: "#b00020", fontSize: "0.8rem" }}>
-          {error}
-        </p>
+        <p className="text-sm text-clay mt-3">{error}</p>
       )}
 
       {result && (
-        <div style={{ marginTop: 12 }}>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            <DiffRow label="Future Intelligence Score" diff={result.score} />
-            {Object.entries(result.predictions).map(([domain, diff]) => (
-              <DiffRow key={domain} label={domain} diff={diff} />
-            ))}
-          </ul>
+        <div className="mt-5 pt-4 border-t border-white/[0.06]">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="font-display text-xs uppercase tracking-widest text-text-low">
+              Scenario results
+            </span>
+            {/* Dashed indicator = hypothetical, distinct from live */}
+            <div className="flex-1 border-t border-dashed border-brass/30" />
+            <span className="font-mono text-[10px] text-brass/60">simulated</span>
+          </div>
+          <DiffRow label="Future Intelligence Score" diff={result.score} />
+          {Object.entries(result.predictions).map(([domain, diff]) => (
+            <DiffRow key={domain} label={domain} diff={diff} />
+          ))}
         </div>
       )}
 
-      <div style={{ marginTop: 12 }}>
-        <Disclaimer>
+      <div className="mt-4">
+        <Disclaimer variant="prediction">
           {result?.disclaimer ??
-            "Hypothetical what-if only — not a prediction that this will happen. Nothing is saved."}
+            "Hypothetical what-if only — not a prediction that this will happen. Simulated results are clearly distinct from live forecasts and are not saved."}
         </Disclaimer>
       </div>
     </Card>

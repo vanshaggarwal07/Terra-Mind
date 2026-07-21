@@ -6,15 +6,30 @@ export function Table({
   children: React.ReactNode;
 }) {
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          {columns.map((c) => (
-            <th key={c}>{c}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>{children}</tbody>
-    </table>
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th
+                key={col}
+                className="text-left px-3 py-2 border-b border-white/10 text-text-low font-semibold text-[11px] uppercase tracking-wider"
+              >
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
+  );
+}
+
+export function Td({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <td className={`px-3 py-2 border-b border-white/[0.06] text-text-mid ${className ?? ""}`}>
+      {children}
+    </td>
   );
 }

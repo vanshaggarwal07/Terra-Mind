@@ -6,12 +6,11 @@ import { Badge, statusTone } from "@/components/ui/Badge";
 import { Citation } from "@/components/trust/Citation";
 import { ConfidenceBand } from "@/components/trust/ConfidenceBand";
 import { colorForType } from "@/components/map/colors";
+import { cn } from "@/lib/cn";
 
 /**
- * Custom horizontal Gantt (blueprint §1 feature 1, §8, §11 PoC).
- * x-axis = years; each verified infra event is a bar positioned by expected_year
- * and colored by type. Same component works with live API data or hand-entered
- * static PoC data (see sector-22d fixture).
+ * Numbered infra timeline — design system §3.2.
+ * Numbering is chronological (by expected_year), not decorative.
  */
 export function FutureTimeline({
   events,
@@ -20,35 +19,55 @@ export function FutureTimeline({
   events: InfraEvent[];
   years: number[];
 }) {
-  const dated = events.filter((e) => e.expected_year != null);
+  const dated = events
+    .filter((e) => e.expected_year != null)
+    .sort((a, b) => (a.expected_year ?? 0) - (b.expected_year ?? 0));
   const undated = events.filter((e) => e.expected_year == null);
 
-  const axis = buildAxis(years, dated);
   if (events.length === 0) {
-    return <p className="muted">No verified infrastructure events yet for this locality.</p>;
+    return (
+      <p className="text-sm text-text-low">
+        No verified infrastructure events yet for this locality.
+      </p>
+    );
   }
 
+  const axis = buildAxis(years, dated);
   const min = axis[0];
   const span = Math.max(1, axis[axis.length - 1] - min);
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 8, paddingLeft: 220 }}>
+      {/* Year axis */}
+      <div
+        className="flex gap-2 mb-3 pl-[220px]"
+        aria-hidden="true"
+      >
         {axis.map((y) => (
-          <div key={y} className="muted" style={{ flex: 1, fontSize: "0.75rem" }}>
+          <div key={y} className="flex-1 font-mono text-[11px] text-text-low">
             {y}
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {dated.map((e) => (
-          <TimelineRow key={e.id} event={e} min={min} span={span} />
+
+      {/* Dated events — numbered chronologically */}
+      <div className="flex flex-col gap-2">
+        {dated.map((e, idx) => (
+          <TimelineRow
+            key={e.id}
+            event={e}
+            min={min}
+            span={span}
+            number={idx + 1}
+          />
         ))}
       </div>
+
+      {/* Undated events */}
       {undated.length > 0 && (
-        <div style={{ marginTop: 12 }}>
-          <div className="muted" style={{ fontSize: "0.8rem", marginBottom: 4 }}>
-            Undated (year not yet confirmed)
+        <div className="mt-5">
+          <div className="font-display text-[10px] uppercase tracking-widest text-text-low mb-2">
+            Year not yet confirmed
           </div>
           {undated.map((e) => (
             <TimelineRow key={e.id} event={e} min={min} span={span} undated />
@@ -63,11 +82,13 @@ function TimelineRow({
   event,
   min,
   span,
+  number,
   undated = false,
 }: {
   event: InfraEvent;
   min: number;
   span: number;
+  number?: number;
   undated?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -78,53 +99,66 @@ function TimelineRow({
 
   return (
     <div
-      style={{
-        border: "1px solid var(--border)",
-        borderRadius: 8,
-        padding: "6px 8px",
-        background: "var(--bg-elev)",
-        cursor: "pointer",
-      }}
+      className={cn(
+        "border border-white/[0.08] rounded-card p-3 cursor-pointer",
+        "hover:border-cyan/20 transition-colors bg-ink-2",
+      )}
       onClick={() => setOpen((o) => !o)}
+      role="button"
+      aria-expanded={open}
+      aria-label={`${event.type.replace(/_/g, " ")}, ${event.status}, ${event.expected_year ?? "year TBD"}`}
+      tabIndex={0}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setOpen((o) => !o)}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "212px 1fr", alignItems: "center", gap: 8 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontWeight: 600, textTransform: "capitalize" }}>
-            {event.type.replace("_", " ")}
-          </span>
-          <span>
-            <Badge tone={statusTone(event.status)}>{event.status.replace("_", " ")}</Badge>
-          </span>
+      <div
+        className="grid items-center gap-3"
+        style={{ gridTemplateColumns: "212px 1fr" }}
+      >
+        <div className="flex items-start gap-2">
+          {/* Earned number — chronological order */}
+          {number !== undefined && (
+            <span className="font-mono text-[11px] text-brass/50 w-5 shrink-0 pt-0.5">
+              {String(number).padStart(2, "0")}
+            </span>
+          )}
+          <div>
+            <div className="font-display font-medium text-sm text-text-hi capitalize mb-1">
+              {event.type.replace(/_/g, " ")}
+            </div>
+            <Badge tone={statusTone(event.status)}>
+              {event.status.replace(/_/g, " ")}
+            </Badge>
+          </div>
         </div>
-        <div style={{ position: "relative", height: 22, background: "var(--bg-elev-2)", borderRadius: 6 }}>
+
+        {/* Gantt bar */}
+        <div
+          className="relative h-6 bg-ink-3 rounded overflow-hidden"
+          role="presentation"
+        >
           <div
+            className="absolute inset-y-0 left-0 rounded flex items-center justify-end pr-2"
             style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
               width: `${Math.max(6, Math.min(100, widthPct))}%`,
-              background: `linear-gradient(90deg, ${rgb}55, ${rgb})`,
-              borderRadius: 6,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              paddingRight: 8,
-              fontSize: "0.75rem",
-              color: "#04121f",
-              fontWeight: 700,
+              background: `linear-gradient(90deg, ${rgb}44, ${rgb}aa)`,
             }}
           >
-            {event.expected_year ?? "TBD"}
+            <span className="font-mono text-[11px] font-bold text-ink">
+              {event.expected_year ?? "TBD"}
+            </span>
           </div>
         </div>
       </div>
+
+      {/* Expanded detail */}
       {open && (
-        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-col gap-3">
           {event.budget_inr_cr != null && (
-            <div className="muted">Sanctioned budget: ₹{event.budget_inr_cr} cr</div>
+            <div className="font-mono text-[12px] text-text-mid">
+              Sanctioned budget: ₹{event.budget_inr_cr.toLocaleString("en-IN")} Cr
+            </div>
           )}
-          <div style={{ maxWidth: 320 }}>
+          <div className="max-w-xs">
             <ConfidenceBand confidence={event.confidence} />
           </div>
           <Citation citation={event.citation} />
