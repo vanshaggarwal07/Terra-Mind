@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     llm_embedding_model: str = Field(default="text-embedding-3-small")
     llm_embedding_dim: int = Field(default=1536)
 
+    # --- xAI Grok (social analysis + enhanced copilot) ---
+    # OpenAI-compatible endpoint — drop-in for the existing LLMClient.
+    # When xai_api_key is set, Grok is used for copilot and social analysis;
+    # the OpenAI key is kept as embedding fallback (Grok doesn't embed yet).
+    xai_api_key: str = Field(default="")
+    xai_model: str = Field(default="grok-3")
+    xai_base_url: str = Field(default="https://api.x.ai/v1")
+
     # --- HTTP crawler defaults ---
     http_user_agent: str = Field(default="PropertyDigitalTwinBot/1.0 (+https://example.com/bot)")
     http_default_rate_limit_per_sec: float = Field(default=1.0)

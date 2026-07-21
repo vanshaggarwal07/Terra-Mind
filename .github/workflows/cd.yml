@@ -68,12 +68,12 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Roll out new task definitions (circuit-breaker auto-rollback)
         run: |
-          for svc in api dagster; do
+          for svc in api dagster web; do
             aws ecs update-service --cluster twin-dev-cluster \
               --service "twin-dev-$svc" --force-new-deployment
           done
           aws ecs wait services-stable --cluster twin-dev-cluster \
-            --services twin-dev-api twin-dev-dagster
+            --services twin-dev-api twin-dev-dagster twin-dev-web
 
   # --- Prod promotion: requires manual approval (GitHub Environment gate) ---
   migrate-prod:
@@ -104,9 +104,9 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Roll out prod (circuit-breaker auto-rollback on failure)
         run: |
-          for svc in api dagster; do
+          for svc in api dagster web; do
             aws ecs update-service --cluster twin-prod-cluster \
               --service "twin-prod-$svc" --force-new-deployment
           done
           aws ecs wait services-stable --cluster twin-prod-cluster \
-            --services twin-prod-api twin-prod-dagster
+            --services twin-prod-api twin-prod-dagster twin-prod-web
