@@ -1,0 +1,63 @@
+"use client";
+
+/**
+ * Individual infra node that "ignites" (becomes visible) when the scrubber
+ * year meets or exceeds the node's event year.
+ */
+export function InfraNode({
+  cx,
+  cy,
+  year,
+  label,
+  currentYear,
+  r = 4,
+}: {
+  cx: number;
+  cy: number;
+  year: number;
+  label: string;
+  currentYear: number;
+  r?: number;
+}) {
+  const active = currentYear >= year;
+
+  return (
+    <g>
+      {/* Outer pulse ring */}
+      {active && (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r + 6}
+          fill="none"
+          stroke="#C89A4C"
+          strokeWidth="0.5"
+          opacity={0.3}
+        />
+      )}
+      {/* Core node */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="#C89A4C"
+        style={{
+          opacity: active ? 0.95 : 0,
+          transition: "opacity 0.5s ease",
+        }}
+      />
+      {/* Label */}
+      {active && (
+        <text
+          x={cx + r + 5}
+          y={cy + 4}
+          fill="#E4C481"
+          fontSize="9"
+          fontFamily="var(--font-mono)"
+        >
+          {label}
+        </text>
+      )}
+    </g>
+  );
+}

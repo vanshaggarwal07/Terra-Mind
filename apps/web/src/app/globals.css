@@ -1,229 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Terra-Mind — Design Token Layer
+   All color values live here as CSS custom properties.
+   Tailwind's theme.extend.colors reference these variables,
+   so no hardcoded hex values ever appear in components.
+   ============================================================ */
+
 :root {
-  --bg: #0b1120;
-  --bg-elev: #111a2e;
-  --bg-elev-2: #16213b;
-  --fg: #e2e8f0;
-  --muted: #94a3b8;
-  --border: #1e293b;
-  --accent: #38bdf8;
-  --accent-2: #818cf8;
-  --good: #34d399;
-  --warn: #fbbf24;
-  --bad: #f87171;
-  --radius: 12px;
+  /* --- Cartographer's studio palette --- */
+  --color-ink:         #0A1A22;
+  --color-ink-2:       #0F2530;
+  --color-ink-3:       #142E3A;
+  --color-cyan:        #6FB8C9;
+  --color-brass:       #C89A4C;
+  --color-brass-light: #E4C481;
+  --color-parchment:   #F2ECDE;
+  --color-moss:        #7A9B76;   /* semantic only — positive signal */
+  --color-clay:        #B5623F;   /* semantic only — risk/caution */
+
+  /* --- Text levels --- */
+  --color-text-hi:  #F2ECDE;
+  --color-text-mid: rgba(242, 236, 222, 0.72);
+  --color-text-low: rgba(242, 236, 222, 0.46);
+
+  /* --- Typography (set by next/font in layout.tsx) --- */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-voice:   'Fraunces', serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+
+  /* --- Misc --- */
+  --radius: 3px;
 }
 
-* {
+/* ============================================================
+   Base resets
+   ============================================================ */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  background: var(--color-ink);
+  color: var(--color-text-hi);
+  font-family: var(--font-display);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--accent);
+  color: inherit;
   text-decoration: none;
 }
-a:hover {
-  text-decoration: underline;
-}
 
-main {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-}
+/* ============================================================
+   Tailwind component layer — shared utility classes
+   ============================================================ */
+@layer components {
+  /* Scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 154, 76, 0.3) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(200, 154, 76, 0.3);
+    border-radius: 999px;
+  }
 
-h1,
-h2,
-h3 {
-  line-height: 1.2;
-}
+  /* Focus ring — brass color, keyboard only */
+  .focus-brass:focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+  }
 
-.muted {
-  color: var(--muted);
-}
-
-/* nav shell */
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.9rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-elev);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-.nav a {
-  color: var(--fg);
-  font-size: 0.9rem;
-}
-.nav .brand {
-  font-weight: 700;
-  color: var(--accent);
-}
-.nav .spacer {
-  flex: 1;
-}
-
-/* card */
-.card {
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.25rem;
-}
-.card + .card {
-  margin-top: 1rem;
-}
-.card h2,
-.card h3 {
-  margin-top: 0;
-}
-
-/* badge */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  background: var(--bg-elev-2);
-  color: var(--fg);
-  text-transform: capitalize;
-}
-.badge--good {
-  color: var(--good);
-  border-color: color-mix(in srgb, var(--good) 40%, transparent);
-}
-.badge--warn {
-  color: var(--warn);
-  border-color: color-mix(in srgb, var(--warn) 40%, transparent);
-}
-.badge--bad {
-  color: var(--bad);
-  border-color: color-mix(in srgb, var(--bad) 40%, transparent);
-}
-.badge--accent {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-}
-
-/* table */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-.table th,
-.table td {
-  text-align: left;
-  padding: 0.55rem 0.6rem;
-  border-bottom: 1px solid var(--border);
-}
-.table th {
-  color: var(--muted);
-  font-weight: 600;
-}
-
-/* tabs */
-.tabs {
-  display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1rem;
-}
-.tab {
-  padding: 0.5rem 0.9rem;
-  border: none;
-  background: none;
-  color: var(--muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  font-size: 0.9rem;
-}
-.tab--active {
-  color: var(--fg);
-  border-bottom-color: var(--accent);
-}
-
-/* trust primitives */
-.disclaimer {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  padding: 0.6rem 0.8rem;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
-  color: var(--fg);
-  font-size: 0.82rem;
-}
-.citation {
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-.citation a {
-  color: var(--accent);
-}
-.confidence {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.confidence__bar {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--bg-elev-2);
-  overflow: hidden;
-}
-.confidence__fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-}
-.confidence__meta {
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-@media (max-width: 780px) {
-  .grid-2 {
-    grid-template-columns: 1fr;
+  /* Tabular numbers for data readouts */
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-button.btn {
-  background: var(--accent);
-  color: #04121f;
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem 0.9rem;
-  font-weight: 600;
+/* ============================================================
+   Reduced-motion global reset
+   Per design system §4: static fallbacks for every animation.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Range input — Timefold scrubber
+   ============================================================ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-brass) 0%,
+    var(--color-brass) var(--fill, 0%),
+    rgba(255, 255, 255, 0.15) var(--fill, 0%)
+  );
+  outline: none;
   cursor: pointer;
 }
-button.btn:disabled {
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-brass-light);
+  border: 2px solid var(--color-ink);
+  box-shadow: 0 0 0 1px var(--color-brass);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-brass-light);
+  border: 2px solid var(--color-ink);
+  box-shadow: 0 0 0 1px var(--color-brass);
+  cursor: pointer;
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--color-brass);
+}
+
+/* ============================================================
+   SVG contour animation
+   ============================================================ */
+.contour-path {
+  fill: none;
+  stroke: var(--color-cyan);
+  stroke-width: 0.6;
   opacity: 0.5;
-  cursor: not-allowed;
+}
+
+.contour-path-dense {
+  fill: none;
+  stroke: var(--color-brass);
+  stroke-width: 0.5;
+  opacity: 0.28;
+}
+
+.draw-path {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: draw-contour 2.6s ease forwards;
+}
+
+@keyframes draw-contour {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
 }

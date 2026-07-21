@@ -1,64 +1,100 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getConstructionSignals, type ConstructionSignalList } from "@/lib/api";
+import { getConstructionSignals, type InfraEvent } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { Disclaimer } from "@/components/trust/Disclaimer";
 
 /**
- * Satellite pattern-signal card (blueprint §3.5, P4.5).
- *
- * Surfaces construction detected from satellite imagery DISTINCTLY from official
- * facts, always labelled as a lower-trust pattern signal (never a verified record).
+ * Satellite-derived construction signal markers.
+ * Design system §5: ALWAYS labeled "pattern-detected, unverified" — never
+ * styled to look as authoritative as /facts entries.
  */
 export function ConstructionSignals({ localityId }: { localityId?: string }) {
-  const [data, setData] = useState<ConstructionSignalList | null>(null);
+  const [signals, setSignals] = useState<InfraEvent[] | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    getConstructionSignals()
-      .then((d) => alive && setData(d))
-      .catch(() => alive && setData(null))
-      .finally(() => alive && setLoaded(true));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const items = (data?.items ?? []).filter(
-    (s) => !localityId || s.locality_id === localityId,
-  );
+    getConstructionSignals(20)
+      .then((res) => {
+        if (!alive) return;
+        const filtered = localityId
+          ? res.items.filter((s) => s.locality_id === localityId)
+          : res.items;
+        setSignals(filtered);
+        setLoaded(true);
+      })
+      .catch(() => {
+        if (alive) { setSignals([]); setLoaded(true); }
+      });
+    return () => { alive = false; };
+  }, [localityId]);
 
   return (
-    <Card title="Satellite signals (pattern)">
-      <span className="badge" style={{ fontSize: "0.7rem" }}>
-        pattern signal · not an official record
-      </span>
-      {!loaded && <p className="muted">Loading…</p>}
-      {loaded && items.length === 0 && (
-        <p className="muted" style={{ fontSize: "0.82rem" }}>
-          No satellite-detected construction signals for this area yet.
+    <Card title="Satellite signals">
+      {/* Mandatory unverified label — always visible */}
+      <div className="flex items-center gap-2 mb-4">
+        <Badge tone="warn">pattern-detected · unverified</Badge>
+        <span className="text-[11px] text-text-low font-mono">
+          CV pipeline · not official data
+        </span>
+      </div>
+
+      {!loaded && (
+        <p className="font-mono text-xs text-text-low">Loading signals…</p>
+      )}
+      {loaded && (!signals || signals.length === 0) && (
+        <p className="text-sm text-text-low">
+          No satellite construction signals detected for this area.
         </p>
       )}
-      {items.length > 0 && (
-        <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0" }}>
-          {items.map((s) => (
-            <li
+      {signals && signals.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {signals.map((s) => (
+            <div
               key={s.id}
-              style={{ padding: "6px 0", borderBottom: "1px solid var(--border,#eee)", fontSize: "0.82rem" }}
+              className="border border-white/[0.08] rounded-card p-3 flex items-start gap-3"
             >
-              New built-up area detected
-              {s.lat && s.lng ? ` near ${s.lat.toFixed(3)}, ${s.lng.toFixed(3)}` : ""} ·{" "}
-              <span className="muted">confidence {(s.confidence * 100).toFixed(0)}%</span>
-            </li>
+              {/* Visual distinction from /facts: dashed-style indicator */}
+              <div
+                className="w-1 self-stretch rounded-full shrink-0"
+                style={{
+                  background: "repeating-linear-gradient(180deg, var(--color-clay) 0, var(--color-clay) 4px, transparent 4px, transparent 8px)",
+                }}
+                aria-hidden="true"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-display font-medium text-sm text-text-hi capitalize">
+                    {s.type.replace(/_/g, " ")}
+                  </span>
+                  <span className="font-mono text-[10px] text-clay border border-clay/30 rounded-sm px-1">
+                    unverified
+                  </span>
+                </div>
+                {s.expected_year && (
+                  <div className="font-mono text-[12px] text-text-low">
+                    detected activity · {s.expected_year}
+                  </div>
+                )}
+                {s.distance_km != null && (
+                  <div className="text-[11px] text-text-low">
+                    {s.distance_km.toFixed(1)} km from centroid
+                  </div>
+                )}
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-      <div style={{ marginTop: 12 }}>
-        <Disclaimer>
-          {data?.disclaimer ??
-            "Satellite-derived pattern signals are unverified early indicators, subject to human review — not official records."}
+
+      <div className="mt-4">
+        <Disclaimer variant="prediction">
+          These signals are pattern-detected from satellite imagery — not verified
+          against official sources. They may indicate activity or may be false
+          positives. Do not act on these alone.
         </Disclaimer>
       </div>
     </Card>

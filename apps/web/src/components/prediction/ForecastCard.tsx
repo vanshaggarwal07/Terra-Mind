@@ -7,72 +7,87 @@ import {
   type PredictionEnvelope,
 } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
-import { confidenceLabel } from "@/components/trust/ConfidenceBand";
+import { ConfidenceBand } from "@/components/trust/ConfidenceBand";
 import { Disclaimer } from "@/components/trust/Disclaimer";
 
 /**
  * Prediction / ML forecast card (blueprint §5, Phase 3).
  *
- * Renders the model-served BAND verbatim (never a bare number), its confidence,
- * horizon framing, model version, and the derived contributing factors. Missing /
- * insufficient-data forecasts are shown honestly rather than as a fake number.
+ * ALWAYS renders ConfidenceBand + Disclaimer — never a bare number.
+ * Missing / insufficient-data forecasts shown honestly as empty states.
  */
-const LABELS: Record<PredictionDomain, string> = {
-  price: "Price / sqft",
-  traffic: "Traffic",
-  flood: "Flood risk",
-  water: "Groundwater depth",
-  aqi: "Air quality (AQI)",
+const LABELS: Record<PredictionDomain, { label: string; icon: string }> = {
+  price:   { label: "Price / sqft",        icon: "₹" },
+  traffic: { label: "Traffic congestion",  icon: "🚗" },
+  flood:   { label: "Flood risk",          icon: "💧" },
+  water:   { label: "Groundwater depth",   icon: "🌊" },
+  aqi:     { label: "Air quality (AQI)",   icon: "🌫" },
 };
 
 const ORDER: PredictionDomain[] = ["price", "flood", "aqi", "water", "traffic"];
 
-function fmt(n: number, unit?: string | null): string {
-  const rounded = Math.abs(n) >= 100 ? Math.round(n).toLocaleString() : n.toFixed(2);
-  return unit ? `${rounded} ${unit}` : rounded;
-}
-
-function Row({ domain, env }: { domain: PredictionDomain; env: PredictionEnvelope }) {
+function DomainRow({
+  domain,
+  env,
+}: {
+  domain: PredictionDomain;
+  env: PredictionEnvelope;
+}) {
+  const { label, icon } = LABELS[domain];
   const hasBand =
-    env.prediction_low !== null &&
-    env.prediction_low !== undefined &&
-    env.prediction_high !== null &&
-    env.prediction_high !== undefined;
-  const c = Math.max(0, Math.min(1, env.confidence));
+    env.prediction_low != null && env.prediction_high != null;
 
   return (
-    <li style={{ display: "flex", flexDirection: "column", gap: 4, padding: "8px 0", borderBottom: "1px solid var(--border, #eee)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <strong>{LABELS[domain]}</strong>
-        {hasBand ? (
-          <span style={{ fontWeight: 700 }}>
-            {fmt(env.prediction_low as number, env.unit)} – {fmt(env.prediction_high as number, env.unit)}
+    <div className="py-4 border-b border-white/[0.06] last:border-0">
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center gap-2">
+          <span aria-hidden="true">{icon}</span>
+          <span className="font-display font-medium text-sm text-text-hi">
+            {label}
           </span>
-        ) : (
-          <span className="muted">no estimate (insufficient data)</span>
-        )}
+        </div>
+        <div className="font-mono text-[11px] text-text-low">
+          v{env.model_version}
+        </div>
       </div>
-      <div className="confidence__bar" style={{ height: 8 }}>
-        <div className="confidence__fill" style={{ width: `${c * 100}%` }} />
-      </div>
-      <div className="muted" style={{ fontSize: "0.72rem", display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <span>
-          {confidenceLabel(c)} confidence ({Math.round(c * 100)}%)
-        </span>
-        {env.horizon && <span>horizon {env.horizon}</span>}
-        <span>model {env.model_version}</span>
-      </div>
-      {hasBand && env.contributing_factors.length > 0 && (
-        <div className="muted" style={{ fontSize: "0.72rem" }}>
-          drivers: {env.contributing_factors.slice(0, 3).map((f) => f.factor).join(", ")}
+
+      {hasBand ? (
+        <ConfidenceBand
+          confidence={env.confidence}
+          low={env.prediction_low}
+          mid={env.prediction}
+          high={env.prediction_high}
+          unit={env.unit ?? ""}
+        />
+      ) : (
+        <p className="text-[12px] text-text-low italic">
+          No estimate — insufficient data for this locality.
+        </p>
+      )}
+
+      {env.horizon && (
+        <div className="mt-2 font-mono text-[11px] text-text-low">
+          horizon: {env.horizon}
         </div>
       )}
-    </li>
+
+      {env.contributing_factors.length > 0 && (
+        <div className="mt-2 text-[11px] text-text-low">
+          drivers:{" "}
+          {env.contributing_factors
+            .slice(0, 3)
+            .map((f) => f.factor)
+            .join(", ")}
+        </div>
+      )}
+    </div>
   );
 }
 
 export function ForecastCard({ localityId }: { localityId?: string }) {
-  const [preds, setPreds] = useState<Record<string, PredictionEnvelope> | null>(null);
+  const [preds, setPreds] = useState<Record<string, PredictionEnvelope> | null>(
+    null,
+  );
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -90,26 +105,35 @@ export function ForecastCard({ localityId }: { localityId?: string }) {
 
   return (
     <Card title="Forecasts (ML)">
-      {!loaded && <p className="muted">Loading forecasts…</p>}
+      {!loaded && (
+        <p className="font-mono text-xs text-text-low">Loading forecasts…</p>
+      )}
       {loaded && available.length === 0 && (
-        <p className="muted">
-          Forecast models are not available yet. Train them with
-          <code> python -m ml.training.train</code>.
+        <p className="text-sm text-text-low">
+          Forecast models are not available yet. Run{" "}
+          <code className="font-mono text-xs text-cyan">
+            python -m ml.training.train
+          </code>
+          .
         </p>
       )}
       {available.length > 0 && (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <div>
           {available.map((d) => (
-            <Row key={d} domain={d} env={preds![d]} />
+            <DomainRow key={d} domain={d} env={preds![d]} />
           ))}
-        </ul>
+        </div>
       )}
-      <div style={{ marginTop: 12 }}>
-        <Disclaimer>
-          Forecasts are model estimates shown as ranges with confidence — not
-          investment advice. Numbers come from statistical models, never the chat AI.
-        </Disclaimer>
-      </div>
+      {/* Disclaimer always rendered when any forecast is shown */}
+      {(loaded && available.length > 0) || true ? (
+        <div className="mt-4">
+          <Disclaimer variant="prediction">
+            Forecasts are model estimates shown as ranges with confidence — not
+            investment advice. Numbers come from statistical models trained on
+            public data, not AI generation.
+          </Disclaimer>
+        </div>
+      ) : null}
     </Card>
   );
 }
