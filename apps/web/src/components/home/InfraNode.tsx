@@ -30,7 +30,7 @@ export function InfraNode({
           cy={cy}
           r={r + 6}
           fill="none"
-          stroke="#C89A4C"
+          stroke="var(--color-brass)"
           strokeWidth="0.5"
           opacity={0.3}
         />
@@ -40,10 +40,10 @@ export function InfraNode({
         cx={cx}
         cy={cy}
         r={r}
-        fill="#C89A4C"
+        fill="var(--color-brass)"
         style={{
           opacity: active ? 0.95 : 0,
-          transition: "opacity 0.5s ease",
+          transition: "opacity var(--duration-mid) var(--ease-out-soft)",
         }}
       />
       {/* Label */}
@@ -51,7 +51,7 @@ export function InfraNode({
         <text
           x={cx + r + 5}
           y={cy + 4}
-          fill="#E4C481"
+          fill="var(--color-brass-light)"
           fontSize="9"
           fontFamily="var(--font-mono)"
         >

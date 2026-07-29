@@ -15,9 +15,7 @@ type Message = {
 };
 
 /**
- * Copilot chat (blueprint §1 feature 5, §6).
- * Streams the answer and renders inline citation chips.
- * Refusals shown clearly. Persistent disclaimer always visible.
+ * Copilot console — streams answers with inline citation chips.
  */
 export function CopilotChat({ localityId }: { localityId?: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -66,26 +64,25 @@ export function CopilotChat({ localityId }: { localityId?: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-ds-3">
       <Disclaimer variant="prediction">
-        Answers are grounded only in this platform&apos;s cited data — never the open
-        web — and are not investment advice.
+        Answers are grounded only in this platform&apos;s cited data, never the
+        open web, and are not investment advice.
       </Disclaimer>
 
-      {/* Message thread */}
       <div
         ref={scrollRef}
         className={cn(
-          "border border-white/10 rounded-card p-3",
-          "min-h-[280px] max-h-[460px] overflow-y-auto",
-          "flex flex-col gap-2.5 bg-ink-2 scrollbar-thin",
+          "flex min-h-[280px] max-h-[460px] flex-col gap-ds-2 overflow-y-auto",
+          "rounded-surface border border-line-strong bg-ink p-ds-3",
+          "scrollbar-thin",
         )}
         role="log"
         aria-label="Copilot conversation"
         aria-live="polite"
       >
         {messages.length === 0 && (
-          <p className="text-sm text-text-low font-voice italic">
+          <p className="text-sm leading-relaxed text-text-low">
             Ask about verified infrastructure, timelines, or a RERA builder
             record. Example: &quot;What metro projects affect Sector 22D?&quot;
           </p>
@@ -94,11 +91,11 @@ export function CopilotChat({ localityId }: { localityId?: string }) {
           <MessageBubble key={i} message={m} />
         ))}
         {busy && (
-          <div className="self-start flex gap-1 px-3 py-2">
+          <div className="flex gap-1 self-start px-ds-3 py-ds-2" aria-hidden="true">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-1.5 h-1.5 rounded-full bg-brass/60 animate-pulse"
+                className="h-1.5 w-1.5 rounded-pill bg-brass/60 animate-pulse"
                 style={{ animationDelay: `${i * 150}ms` }}
               />
             ))}
@@ -106,29 +103,30 @@ export function CopilotChat({ localityId }: { localityId?: string }) {
         )}
       </div>
 
-      {/* Input row */}
-      <div className="flex gap-2">
+      <div className="flex gap-ds-2">
+        <label className="sr-only" htmlFor="copilot-input">
+          Your question for the copilot
+        </label>
         <input
+          id="copilot-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
           placeholder="Ask the copilot…"
-          aria-label="Your question for the copilot"
           className={cn(
-            "flex-1 px-3 py-2.5 rounded-card",
-            "bg-ink-3 border border-white/10 text-text-hi text-sm",
-            "placeholder:text-text-low",
-            "focus:outline-none focus:border-brass/50",
+            "flex-1 rounded-surface border border-line-strong bg-ink-3 px-ds-3 py-2.5",
+            "text-sm text-text-hi placeholder:text-text-low",
+            "focus:border-brass/50 focus:outline-none",
           )}
           disabled={busy}
         />
         <button
+          type="button"
           onClick={send}
           disabled={busy || !input.trim()}
           className={cn(
-            "px-4 py-2.5 bg-brass text-ink font-display font-semibold text-sm rounded-card",
-            "transition-opacity hover:opacity-90 focus-brass",
-            "disabled:opacity-40 disabled:cursor-not-allowed",
+            "btn-primary focus-brass",
+            "disabled:cursor-not-allowed disabled:opacity-40",
           )}
         >
           {busy ? "…" : "Ask"}
@@ -143,9 +141,9 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div
       className={cn(
-        "max-w-[85%] rounded-card px-3 py-2.5 text-sm",
+        "max-w-[85%] rounded-surface px-ds-3 py-2.5 text-sm",
         isUser
-          ? "self-end bg-brass text-ink font-medium"
+          ? "self-end bg-brass font-medium text-ink"
           : cn(
               "self-start bg-ink-3 text-text-hi",
               message.refused && "border border-clay/40",
@@ -155,13 +153,13 @@ function MessageBubble({ message }: { message: Message }) {
       <div className="whitespace-pre-wrap">{message.text}</div>
       {message.citations && message.citations.length > 0 && (
         <div
-          className="mt-2 flex flex-wrap gap-1.5"
+          className="mt-ds-2 flex flex-wrap gap-1.5"
           aria-label="Sources cited in this answer"
         >
           {message.citations.map((c, i) => (
             <span
               key={i}
-              className="bg-ink border border-white/10 rounded-pill px-2 py-0.5"
+              className="rounded-control border border-line-strong bg-ink px-ds-2 py-0.5"
             >
               <Citation citation={c} index={i + 1} />
             </span>

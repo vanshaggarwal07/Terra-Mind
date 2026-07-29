@@ -1,6 +1,6 @@
 /**
- * /style-guide — visual QA for every design token and component.
- * Phase 0 Definition of Done: render all colors, type roles, and primitives.
+ * /style-guide — visual QA for every design token and primitive.
+ * Phase 1: cartographer / instrument system.
  */
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -8,16 +8,50 @@ import { Citation } from "@/components/trust/Citation";
 import { ConfidenceBand } from "@/components/trust/ConfidenceBand";
 import { Disclaimer } from "@/components/trust/Disclaimer";
 
-const TOKENS = [
-  { name: "ink",         hex: "#0A1A22", var: "--color-ink",         role: "Base surface" },
-  { name: "ink-2",       hex: "#0F2530", var: "--color-ink-2",       role: "Elevated surface" },
-  { name: "ink-3",       hex: "#142E3A", var: "--color-ink-3",       role: "Double-elevated" },
-  { name: "cyan",        hex: "#6FB8C9", var: "--color-cyan",        role: "Contour / secondary" },
-  { name: "brass",       hex: "#C89A4C", var: "--color-brass",       role: "Primary accent" },
-  { name: "brass-light", hex: "#E4C481", var: "--color-brass-light", role: "Readout text" },
-  { name: "parchment",   hex: "#F2ECDE", var: "--color-parchment",   role: "Light surface / text" },
-  { name: "moss",        hex: "#7A9B76", var: "--color-moss",        role: "Semantic positive ONLY" },
-  { name: "clay",        hex: "#B5623F", var: "--color-clay",        role: "Semantic risk ONLY" },
+const SURFACES = [
+  { name: "ink",   hex: "#0A1A22", role: "Base surface" },
+  { name: "ink-2", hex: "#0F2530", role: "Elevated surface" },
+  { name: "ink-3", hex: "#142E3A", role: "Double-elevated" },
+  { name: "ink-4", hex: "#1A3A48", role: "Hover / active panel" },
+];
+
+const ACCENT = [
+  { name: "brass",       hex: "#C89A4C", role: "ONLY brand accent (CTAs, focus, key metrics)" },
+  { name: "brass-light", hex: "#E4C481", role: "Readout / hover lift" },
+];
+
+const STRUCTURAL = [
+  { name: "contour", hex: "#6FB8C9", role: "Map strokes / structural only - not CTA" },
+];
+
+const SEMANTIC = [
+  { name: "moss", hex: "#7A9B76", role: "Positive status ONLY" },
+  { name: "clay", hex: "#B5623F", role: "Risk / caution ONLY" },
+];
+
+const TEXT = [
+  { name: "text-hi",    hex: "#F2ECDE", role: "Primary text / parchment" },
+  { name: "text-mid",   hex: "72%",     role: "Secondary body" },
+  { name: "text-low",   hex: "46%",     role: "Meta / labels" },
+  { name: "text-faint", hex: "28%",     role: "Disabled / hairline labels" },
+];
+
+const SPACING = [
+  { token: "1", px: 4 },
+  { token: "2", px: 8 },
+  { token: "3", px: 12 },
+  { token: "4", px: 16 },
+  { token: "5", px: 24 },
+  { token: "6", px: 32 },
+  { token: "7", px: 48 },
+  { token: "8", px: 64 },
+  { token: "9", px: 96 },
+];
+
+const RADII = [
+  { name: "control", value: "2px",  use: "Inputs, small chips" },
+  { name: "surface", value: "3px",  use: "Cards, panels, buttons" },
+  { name: "pill",    value: "999px", use: "Scrubber thumb only" },
 ];
 
 const MOCK_CITATION = {
@@ -27,69 +61,146 @@ const MOCK_CITATION = {
   as_of: "2024-06-01T00:00:00Z",
 };
 
+function Swatch({
+  name,
+  hex,
+  role,
+  cssVar,
+}: {
+  name: string;
+  hex: string;
+  role: string;
+  cssVar?: string;
+}) {
+  const bg = cssVar ? `var(${cssVar})` : hex.endsWith("%") ? undefined : hex;
+  return (
+    <div className="rounded-surface overflow-hidden border border-line-strong">
+      <div
+        className="h-16"
+        style={
+          bg
+            ? { backgroundColor: bg }
+            : {
+                background:
+                  "linear-gradient(90deg, transparent, var(--color-parchment))",
+                opacity: Number(hex.replace("%", "")) / 100,
+              }
+        }
+        aria-label={hex}
+      />
+      <div className="p-3 bg-ink-2">
+        <div className="font-mono text-xs text-brass-light">{name}</div>
+        <div className="font-mono text-[10px] text-text-low">{hex}</div>
+        <div className="text-[10px] text-text-low mt-1">{role}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function StyleGuide() {
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12 space-y-16">
-      <div>
-        <h1 className="font-display text-display-sm font-medium text-text-hi mb-2">
-          Terra-Mind — Style Guide
-        </h1>
-        <p className="font-voice italic text-text-mid text-lg">
-          Every token, type role, and trust component for visual QA.
+    <main className="max-w-content mx-auto px-ds-5 md:px-ds-7 py-ds-8 space-y-ds-9">
+      <header className="max-w-2xl">
+        <p className="font-mono text-[11px] tracking-[0.14em] uppercase text-brass mb-ds-3">
+          Design system
         </p>
-      </div>
+        <h1 className="font-display text-display-sm font-medium text-text-hi mb-ds-3">
+          Terra-Mind tokens
+        </h1>
+        <p className="font-display text-text-mid text-body max-w-[65ch]">
+          Cold cartographer / instrument console. One accent (brass). Contour cyan
+          is map structure only. Space Grotesk + IBM Plex Mono. Sharp 3px surfaces.
+        </p>
+      </header>
 
-      {/* ── Color tokens ─────────────────────────────────────── */}
+      {/* Surfaces */}
       <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          01 — Color Tokens
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Surfaces
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {TOKENS.map((t) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-ds-3">
+          {SURFACES.map((t) => (
+            <Swatch key={t.name} {...t} cssVar={`--color-${t.name}`} />
+          ))}
+        </div>
+      </section>
+
+      {/* Accent lock */}
+      <section>
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Accent lock (one)
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-ds-3">
+          {ACCENT.map((t) => (
+            <Swatch key={t.name} {...t} cssVar={`--color-${t.name}`} />
+          ))}
+          {STRUCTURAL.map((t) => (
+            <Swatch key={t.name} {...t} cssVar={`--color-${t.name}`} />
+          ))}
+        </div>
+      </section>
+
+      {/* Semantic + text */}
+      <section>
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Semantic status + text
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-ds-3 mb-ds-3">
+          {SEMANTIC.map((t) => (
+            <Swatch key={t.name} {...t} cssVar={`--color-${t.name}`} />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-ds-3">
+          {TEXT.map((t) => (
             <div
               key={t.name}
-              className="rounded-card overflow-hidden border border-white/10"
+              className="rounded-surface border border-line-strong p-ds-3 bg-ink-2"
             >
+              <div className="font-mono text-xs text-brass-light mb-ds-2">{t.name}</div>
               <div
-                className="h-16"
-                style={{ backgroundColor: t.hex }}
-                aria-label={t.hex}
-              />
-              <div className="p-3 bg-ink-2">
-                <div className="font-mono text-xs text-brass-light">{t.name}</div>
-                <div className="font-mono text-[10px] text-text-low">{t.hex}</div>
-                <div className="text-[10px] text-text-low mt-1">{t.role}</div>
+                className={
+                  t.name === "text-hi"
+                    ? "text-text-hi text-sm"
+                    : t.name === "text-mid"
+                      ? "text-text-mid text-sm"
+                      : t.name === "text-low"
+                        ? "text-text-low text-sm"
+                        : "text-text-faint text-sm"
+                }
+              >
+                Sample readout
               </div>
+              <div className="text-[10px] text-text-low mt-ds-2">{t.role}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Typography ───────────────────────────────────────── */}
+      {/* Typography */}
       <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          02 — Typography
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Typography
         </h2>
-        <div className="space-y-6">
+        <div className="space-y-ds-6 border border-line-strong rounded-surface p-ds-5 bg-ink-2">
           <div>
             <div className="text-[10px] font-mono text-text-low mb-1">
-              Space Grotesk / display · 56px
+              Space Grotesk / display · clamp to 56px
             </div>
-            <p className="font-display text-display font-medium text-text-hi leading-none">
+            <p className="font-display text-display font-medium text-text-hi leading-[1.1] pb-1">
               See the property.
             </p>
           </div>
           <div>
             <div className="text-[10px] font-mono text-text-low mb-1">
-              Fraunces / editorial voice · 22px italic
+              Space Grotesk italic / emphasis (same family - Fraunces removed)
             </div>
-            <p className="font-voice italic text-[22px] text-text-mid">
-              Every locality&apos;s next ten years — sourced, cited, and never a bare number.
+            <p className="font-display italic text-[22px] text-text-mid leading-[1.2] pb-1">
+              Every locality&apos;s next ten years - sourced, cited, never a bare number.
             </p>
           </div>
           <div>
             <div className="text-[10px] font-mono text-text-low mb-1">
-              IBM Plex Mono / data instrument · 20px
+              IBM Plex Mono / data instrument
             </div>
             <p className="font-mono text-data-lg text-brass-light tabular">
               +19% · Confidence 78% · ₹90L → ₹1.07Cr
@@ -98,12 +209,82 @@ export default function StyleGuide() {
         </div>
       </section>
 
-      {/* ── Badges ───────────────────────────────────────────── */}
+      {/* Spacing */}
       <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          03 — Badges
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Spacing scale (use ds-* utilities)
         </h2>
-        <div className="flex flex-wrap gap-3">
+        <div className="space-y-ds-2">
+          {SPACING.map((s) => (
+            <div key={s.token} className="flex items-center gap-ds-4">
+              <span className="font-mono text-[11px] text-text-low w-20 shrink-0">
+                ds-{s.token}
+              </span>
+              <span className="font-mono text-[11px] text-text-faint w-10 shrink-0">
+                {s.px}px
+              </span>
+              <div
+                className="h-3 bg-brass/40 rounded-control"
+                style={{ width: s.px }}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Radius */}
+      <section>
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Radius system
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-ds-3">
+          {RADII.map((r) => (
+            <div
+              key={r.name}
+              className="border border-line-strong bg-ink-2 p-ds-5"
+              style={{ borderRadius: r.value }}
+            >
+              <div className="font-mono text-xs text-brass-light">
+                rounded-{r.name === "surface" ? "surface / card" : r.name}
+              </div>
+              <div className="font-mono text-[10px] text-text-low mt-1">{r.value}</div>
+              <div className="text-[11px] text-text-mid mt-ds-2">{r.use}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Buttons */}
+      <section>
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Buttons (brass only)
+        </h2>
+        <div className="flex flex-wrap gap-ds-3 items-center">
+          <button type="button" className="btn-primary focus-brass">
+            Ask the copilot
+          </button>
+          <button type="button" className="btn-secondary focus-brass">
+            See localities
+          </button>
+          <button
+            type="button"
+            className="btn-primary focus-brass opacity-40 cursor-not-allowed"
+            disabled
+          >
+            Disabled
+          </button>
+        </div>
+        <p className="text-[11px] text-text-low mt-ds-3 max-w-[65ch]">
+          Contour cyan is never used on buttons. Ghost/secondary stays brass-bordered.
+        </p>
+      </section>
+
+      {/* Badges */}
+      <section>
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Badges
+        </h2>
+        <div className="flex flex-wrap gap-ds-3">
           <Badge tone="default">Default</Badge>
           <Badge tone="good">Approved</Badge>
           <Badge tone="warn">Proposed</Badge>
@@ -113,111 +294,61 @@ export default function StyleGuide() {
         </div>
       </section>
 
-      {/* ── Card ─────────────────────────────────────────────── */}
+      {/* Card */}
       <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          04 — Card Primitive
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Card primitive
         </h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-ds-4">
           <Card title="Card with title">
             <p className="text-text-mid text-sm">
-              This is body content inside a card. The border uses cyan/18 opacity
-              and the background resolves from{" "}
-              <code className="font-mono text-xs text-cyan">--color-ink</code>.
+              Border uses structural contour at low opacity. Accent brass appears only
+              on hover/focus or key metrics.
             </p>
           </Card>
           <Card title="Card with actions" actions={<Badge tone="brass">Live</Badge>}>
             <p className="text-text-mid text-sm">
-              Cards can carry an actions slot — typically a badge or small button.
+              Actions slot for a badge or compact control. Radius: surface (3px).
             </p>
           </Card>
         </div>
       </section>
 
-      {/* ── Trust: Citation ──────────────────────────────────── */}
+      {/* Trust */}
       <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          05 — Trust: Citation
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-4">
+          Trust components
         </h2>
-        <Card title="Citation component">
-          <p className="text-sm text-text-mid mb-3">
-            Every fact carries a citation. Example:
-          </p>
-          <Citation citation={MOCK_CITATION} />
-          <div className="mt-3">
-            <Citation citation={MOCK_CITATION} index={1} />
+        <div className="space-y-ds-4">
+          <Card title="Citation">
+            <Citation citation={MOCK_CITATION} />
+          </Card>
+          <div className="grid md:grid-cols-3 gap-ds-4">
+            <Card title="High · 78%">
+              <ConfidenceBand confidence={0.78} low={90_00000} high={1_07_00000} unit="₹" />
+            </Card>
+            <Card title="Medium · 55%">
+              <ConfidenceBand confidence={0.55} value={65} min={0} max={100} />
+            </Card>
+            <Card title="Low · 28%">
+              <ConfidenceBand confidence={0.28} value={40} min={0} max={100} unit="AQI" />
+            </Card>
           </div>
-        </Card>
-      </section>
-
-      {/* ── Trust: ConfidenceBand ────────────────────────────── */}
-      <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          06 — Trust: ConfidenceBand
-        </h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card title="High confidence · 78%">
-            <ConfidenceBand confidence={0.78} low={90_00000} high={1_07_00000} unit="₹" />
-          </Card>
-          <Card title="Medium confidence · 55%">
-            <ConfidenceBand confidence={0.55} value={65} min={0} max={100} />
-          </Card>
-          <Card title="Low confidence · 28%">
-            <ConfidenceBand confidence={0.28} value={40} min={0} max={100} unit="AQI" />
-          </Card>
-        </div>
-      </section>
-
-      {/* ── Trust: Disclaimer ────────────────────────────────── */}
-      <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          07 — Trust: Disclaimer
-        </h2>
-        <div className="space-y-3">
           <Disclaimer variant="prediction" />
-          <Disclaimer variant="builder" />
-          <Disclaimer variant="prediction">
-            Custom disclaimer copy — this forecast uses 2024 input data and
-            assumes no significant policy changes. Estimate only.
-          </Disclaimer>
         </div>
       </section>
 
-      {/* ── Chip / Tag ───────────────────────────────────────── */}
-      <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          08 — Chips / Tags
+      {/* Motion notes */}
+      <section className="border border-line-strong rounded-surface p-ds-5 bg-ink-2">
+        <h2 className="font-display text-sm font-medium text-text-hi mb-ds-3">
+          Motion tokens (wired for Phase 3+)
         </h2>
-        <div className="flex flex-wrap gap-2">
-          {["Metro approved", "Airport 14km", "Expressway", "Film City", "IT Park"].map(
-            (tag) => (
-              <span
-                key={tag}
-                className="text-[11px] text-text-mid border border-white/[0.14] rounded-sm px-2 py-1"
-              >
-                {tag}
-              </span>
-            ),
-          )}
-        </div>
-      </section>
-
-      {/* ── Buttons ──────────────────────────────────────────── */}
-      <section>
-        <h2 className="font-display text-xs uppercase tracking-widest text-text-low mb-6">
-          09 — Buttons
-        </h2>
-        <div className="flex flex-wrap gap-3 items-center">
-          <button className="px-5 py-2.5 bg-brass text-ink font-display font-semibold text-sm rounded-sm transition-opacity hover:opacity-90 focus-brass">
-            Primary CTA
-          </button>
-          <button className="px-5 py-2.5 border border-brass/50 text-brass-light font-display text-sm rounded-sm transition-all hover:bg-brass/10 focus-brass">
-            Secondary
-          </button>
-          <button className="px-5 py-2.5 border border-cyan/30 text-cyan font-display text-sm rounded-sm transition-all hover:bg-cyan/10 focus-brass">
-            Explorer
-          </button>
-        </div>
+        <ul className="font-mono text-[11px] text-text-mid space-y-ds-2">
+          <li>--ease-out-expo · cubic-bezier(0.16, 1, 0.3, 1)</li>
+          <li>--duration-fast 150ms · --duration-mid 300ms · --duration-slow 600ms</li>
+          <li>Animate transform + opacity only. Honor prefers-reduced-motion.</li>
+          <li>z: base 0 · raised 10 · sticky 30 · nav 40 · overlay 50 · modal 60 · toast 70</li>
+        </ul>
       </section>
     </main>
   );

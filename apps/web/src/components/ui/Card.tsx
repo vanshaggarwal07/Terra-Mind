@@ -1,8 +1,7 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Base card primitive — ink surface, subtle cyan border.
- * Maps to the design system's "cartographer's studio" card pattern.
+ * Base surface panel — ink, contour hairline, surface radius.
  */
 export function Card({
   title,
@@ -20,15 +19,15 @@ export function Card({
   return (
     <section
       className={cn(
-        "bg-ink border border-cyan/[0.18] rounded-card shadow-card",
-        !noPad && "p-5",
+        "rounded-surface border border-line-contour bg-ink shadow-card",
+        !noPad && "p-ds-4 md:p-ds-5",
         className,
       )}
     >
       {(title || actions) && (
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-ds-4 flex items-center justify-between gap-ds-3">
           {typeof title === "string" ? (
-            <h3 className="m-0 text-sm font-semibold font-display uppercase tracking-widest text-text-low">
+            <h3 className="m-0 font-display text-sm font-medium text-text-hi">
               {title}
             </h3>
           ) : (

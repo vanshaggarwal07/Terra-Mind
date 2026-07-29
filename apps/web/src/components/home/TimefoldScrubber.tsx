@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useReducedMotion } from "framer-motion";
+import { gsap } from "gsap";
 import { ContourBackground } from "./ContourBackground";
 import { InfraNode } from "./InfraNode";
 import type { InfraEvent, PredictionEnvelope } from "@/lib/api";
@@ -9,26 +12,34 @@ const MIN_YEAR = 2026;
 const MAX_YEAR = 2035;
 
 /**
- * Infrastructure nodes sourced from real /facts data.
- * Positioned on a 1200×500 viewport — each has an x/y and its expected_year.
- * In production these positions are laid out by corridor geography; the prototype
- * uses fixed positions that map roughly to the geographic spread.
+ * Hero — asymmetric instrument: copy + Timefold scrubber over full-bleed contours.
+ * Signature load via GSAP. Scrubber is the product interaction.
+ * Hero text stack: eyebrow · headline · subtext · CTA group (max 4).
  */
+
 const NODE_POSITIONS: Record<string, { cx: number; cy: number }> = {
-  metro:             { cx: 230, cy: 150 },
-  airport:           { cx: 880, cy: 170 },
-  expressway:        { cx: 580, cy: 130 },
-  expressway_rrts:   { cx: 740, cy: 260 },
-  road:              { cx: 420, cy: 220 },
-  railway:           { cx: 1000, cy: 300 },
-  industrial_zone:   { cx: 1080, cy: 200 },
-  commercial_zone:   { cx: 640, cy: 360 },
-  residential_zone:  { cx: 360, cy: 330 },
-  park:              { cx: 950, cy: 90 },
+  metro: { cx: 230, cy: 150 },
+  airport: { cx: 880, cy: 170 },
+  expressway: { cx: 580, cy: 130 },
+  expressway_rrts: { cx: 740, cy: 260 },
+  road: { cx: 420, cy: 220 },
+  railway: { cx: 1000, cy: 300 },
+  industrial_zone: { cx: 1080, cy: 200 },
+  commercial_zone: { cx: 640, cy: 360 },
+  residential_zone: { cx: 360, cy: 330 },
+  park: { cx: 950, cy: 90 },
 };
 
-/** Fallback lookup if the backend doesn't have per-year aggregate prices yet.
- *  Labeled as "illustrative" and visible in the disclaimer. */
+/** Shown when API returns no dated infra events — labeled illustrative in UI. */
+const FALLBACK_NODES = [
+  { cx: 230, cy: 150, year: 2027, label: "metro", r: 4 },
+  { cx: 580, cy: 130, year: 2028, label: "expressway", r: 4 },
+  { cx: 880, cy: 170, year: 2030, label: "airport", r: 4 },
+  { cx: 740, cy: 260, year: 2031, label: "rrts", r: 4 },
+  { cx: 420, cy: 220, year: 2029, label: "road", r: 4 },
+  { cx: 640, cy: 360, year: 2032, label: "commercial", r: 4 },
+];
+
 const ILLUSTRATIVE_UPLIFT: Record<number, number> = {
   2026: 0, 2027: 2, 2028: 5, 2029: 9, 2030: 19,
   2031: 22, 2032: 25, 2033: 27, 2034: 29, 2035: 31,
@@ -47,58 +58,56 @@ export function TimefoldScrubber({
 }) {
   const [year, setYear] = useState(MIN_YEAR);
   const scrubberRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
+
   const density = (year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR);
 
-  // Derive uplift & confidence from real prediction if available,
-  // else fall back to illustrative lookup (labeled clearly in the UI).
   const hasRealData = !!prediction;
   const baseUplift = hasRealData
     ? Math.round(
-        ((prediction!.prediction - (prediction!.prediction_low ?? prediction!.prediction)) /
+        ((prediction!.prediction -
+          (prediction!.prediction_low ?? prediction!.prediction)) /
           (prediction!.prediction_low ?? prediction!.prediction)) *
           100,
       )
     : 0;
-  // Scale linearly by year position as a rough proxy for corridor-wide progression
   const uplift = hasRealData
     ? Math.round(baseUplift * density)
-    : ILLUSTRATIVE_UPLIFT[year] ?? 0;
+    : (ILLUSTRATIVE_UPLIFT[year] ?? 0);
   const confidence = hasRealData
     ? Math.round((prediction!.confidence ?? 0.78) * 100)
-    : ILLUSTRATIVE_CONF[year] ?? 78;
+    : (ILLUSTRATIVE_CONF[year] ?? 78);
 
-  // Build nodes from real infra events that have a year
-  const nodes = infraEvents
+  const fromApi = infraEvents
     .filter((e) => e.expected_year != null)
     .map((e) => {
       const pos = NODE_POSITIONS[e.type] ?? {
-        cx: 100 + Math.abs(e.id.charCodeAt(0) * 37) % 1000,
-        cy: 80 + Math.abs(e.id.charCodeAt(1) * 41) % 340,
+        cx: 100 + (Math.abs(e.id.charCodeAt(0) * 37) % 1000),
+        cy: 80 + (Math.abs(e.id.charCodeAt(1) * 41) % 340),
       };
       return {
         ...pos,
         year: e.expected_year as number,
-        label: e.type.replace("_", " "),
+        label: e.type.replace(/_/g, " "),
         r: 4,
       };
     })
-    .slice(0, 12); // cap for visual clarity
+    .slice(0, 12);
 
-  // Keyboard: arrow keys move year by 1
-  const handleKey = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-        setYear((y) => Math.max(MIN_YEAR, y - 1));
-        e.preventDefault();
-      } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-        setYear((y) => Math.min(MAX_YEAR, y + 1));
-        e.preventDefault();
-      }
-    },
-    [],
-  );
+  const nodes = fromApi.length > 0 ? fromApi : FALLBACK_NODES;
+  const usingFallbackNodes = fromApi.length === 0;
 
-  // Keep CSS fill variable in sync
+  const handleKey = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+      setYear((y) => Math.max(MIN_YEAR, y - 1));
+      e.preventDefault();
+    } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+      setYear((y) => Math.min(MAX_YEAR, y + 1));
+      e.preventDefault();
+    }
+  }, []);
+
   useEffect(() => {
     if (scrubberRef.current) {
       const pct = ((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100;
@@ -106,113 +115,200 @@ export function TimefoldScrubber({
     }
   }, [year]);
 
-  return (
-    <div className="relative min-h-[78vh] flex flex-col justify-end overflow-hidden bg-ink">
-      {/* Contour background — driven by density */}
-      <ContourBackground density={density} />
+  // Signature load: contours → copy → instrument
+  useEffect(() => {
+    if (!rootRef.current) return;
 
-      {/* Infra nodes overlay */}
+    if (reduceMotion) {
+      gsap.set(rootRef.current.querySelectorAll("[data-hero]"), {
+        opacity: 1,
+        y: 0,
+      });
+      gsap.set(rootRef.current.querySelectorAll(".contour-path"), {
+        strokeDashoffset: 0,
+      });
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const paths = gsap.utils.toArray<SVGPathElement>(".contour-path");
+      paths.forEach((path) => {
+        const len = path.getTotalLength?.() ?? 2000;
+        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+      });
+
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+      tl.to(paths, {
+        strokeDashoffset: 0,
+        duration: 1.4,
+        stagger: 0.08,
+        ease: "power2.out",
+      }, 0);
+
+      tl.fromTo(
+        "[data-hero='eyebrow']",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.5 },
+        0.35,
+      );
+      tl.fromTo(
+        "[data-hero='line']",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 },
+        0.45,
+      );
+      tl.fromTo(
+        "[data-hero='sub']",
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.55 },
+        0.7,
+      );
+      tl.fromTo(
+        "[data-hero='instrument']",
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.7 },
+        0.85,
+      );
+      tl.fromTo(
+        "[data-hero='cta']",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.5 },
+        1.05,
+      );
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, [reduceMotion]);
+
+  return (
+    <section
+      ref={rootRef}
+      className="relative min-h-[calc(100dvh-var(--nav-h))] overflow-hidden bg-ink"
+      aria-label="Corridor timefold"
+    >
+      <ContourBackground density={density} animateOnMount={false} />
+
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
+        className="absolute inset-0 z-[1] h-full w-full pointer-events-none"
         viewBox="0 0 1200 500"
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid slice"
         aria-hidden="true"
       >
         {nodes.map((n, i) => (
-          <InfraNode key={i} {...n} currentYear={year} />
+          <InfraNode key={`${n.label}-${i}`} {...n} currentYear={year} />
         ))}
       </svg>
 
-      {/* Hero content */}
-      <div className="relative z-10 px-6 md:px-12 pb-16 max-w-3xl">
-        {/* Eyebrow */}
-        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-5">
-          Noida · Greater Noida · Yamuna Expressway · Jewar
-        </p>
+      {/* Soft left scrim so type stays readable over the map field */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r from-ink via-ink/80 to-transparent md:via-ink/55 md:to-transparent"
+        aria-hidden="true"
+      />
 
-        {/* Headline */}
-        <h1 className="font-display font-medium text-text-hi mb-5 leading-[1.06] tracking-[-0.01em] text-[clamp(34px,5.4vw,56px)]">
-          See the property.<br />
-          See its{" "}
-          <em className="font-voice italic not-italic" style={{ fontStyle: "italic", color: "var(--color-brass-light)" }}>
-            next ten years.
-          </em>
-        </h1>
-
-        {/* Sub-headline */}
-        <p className="font-voice italic text-[18px] text-text-mid max-w-lg mb-10 leading-[1.55]">
-          Every locality&apos;s approved infrastructure, forecasted price band and
-          confidence — sourced, cited, and never a bare number.
-        </p>
-
-        {/* Timefold scrubber */}
-        <div className="max-w-[560px]">
-          <div className="flex items-center gap-4 mb-3">
-            <span className="font-mono text-[13px] text-brass-light w-11 shrink-0">
-              {year}
-            </span>
-            <input
-              ref={scrubberRef}
-              type="range"
-              min={MIN_YEAR}
-              max={MAX_YEAR}
-              value={year}
-              step={1}
-              className="flex-1 focus-brass"
-              aria-label="Drag to project this corridor forward in time"
-              aria-valuemin={MIN_YEAR}
-              aria-valuemax={MAX_YEAR}
-              aria-valuenow={year}
-              aria-valuetext={`Year ${year}`}
-              onChange={(e) => setYear(Number(e.target.value))}
-              onKeyDown={handleKey}
-            />
-            <span className="font-mono text-[13px] text-text-low w-11 shrink-0 text-right">
-              2035
-            </span>
-          </div>
-
-          <p className="text-[12px] text-text-low mb-6">
-            Drag to fold time — infrastructure nodes ignite as they&apos;re approved
+      <div className="relative z-raised mx-auto grid min-h-[calc(100dvh-var(--nav-h))] max-w-content grid-cols-1 items-end px-ds-5 pb-ds-6 pt-ds-4 md:px-ds-7 md:pb-ds-7 lg:grid-cols-12 lg:items-center lg:pt-ds-4">
+        <div className="lg:col-span-6 xl:col-span-5">
+          {/* 1. Eyebrow */}
+          <p
+            data-hero="eyebrow"
+            className="mb-ds-4 font-mono text-[11px] uppercase tracking-[0.14em] text-brass opacity-0"
+          >
+            Noida to Jewar corridor
           </p>
 
-          {/* Stats */}
-          <div className="flex gap-9 flex-wrap">
-            <div>
-              <div className="text-[11px] text-text-low uppercase tracking-[0.08em] mb-1">
-                Projected value uplift
-              </div>
-              <div className="font-mono text-[22px] font-medium text-brass-light tabular">
-                +{uplift}%
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] text-text-low uppercase tracking-[0.08em] mb-1">
-                Confidence
-              </div>
-              <div className="font-mono text-base text-cyan tabular">
-                {confidence}%
-              </div>
-            </div>
-            {!hasRealData && (
-              <div className="flex items-end">
-                <span className="text-[10px] text-text-low font-mono italic">
-                  illustrative · connect backend for live data
+          {/* 2. Headline — 2 lines, italic descender clearance */}
+          <h1 className="mb-ds-4 font-display text-[clamp(2.125rem,5vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.01em] text-text-hi">
+            <span data-hero="line" className="block opacity-0">
+              See the property.
+            </span>
+            <span data-hero="line" className="block pb-1 opacity-0">
+              See its{" "}
+              <em className="italic text-brass-light">
+                next ten years.
+              </em>
+            </span>
+          </h1>
+
+          {/* 3. Subtext — ≤20 words */}
+          <p
+            data-hero="sub"
+            className="mb-ds-6 max-w-[36ch] font-display text-base leading-relaxed text-text-mid opacity-0 md:text-[17px]"
+          >
+            Approved infrastructure, forecast bands, and confidence - sourced and cited.
+          </p>
+
+          {/* Instrument: Timefold (signature interaction) */}
+          <div
+            data-hero="instrument"
+            className="mb-ds-6 max-w-md rounded-surface border border-line-strong bg-ink-2/70 p-ds-4 opacity-0 backdrop-blur-sm supports-[backdrop-filter]:bg-ink-2/50"
+          >
+            <div className="mb-ds-3 flex items-center justify-between gap-ds-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-text-low">
+                Timefold
+              </span>
+              {(usingFallbackNodes || !hasRealData) && (
+                <span className="font-mono text-[10px] text-text-faint">
+                  illustrative
                 </span>
+              )}
+            </div>
+
+            <div className="mb-ds-4 flex items-center gap-ds-3">
+              <span className="w-11 shrink-0 font-mono text-[13px] text-brass-light tabular">
+                {year}
+              </span>
+              <input
+                ref={scrubberRef}
+                type="range"
+                min={MIN_YEAR}
+                max={MAX_YEAR}
+                value={year}
+                step={1}
+                className="flex-1 focus-brass"
+                aria-label="Project this corridor forward in time"
+                aria-valuemin={MIN_YEAR}
+                aria-valuemax={MAX_YEAR}
+                aria-valuenow={year}
+                aria-valuetext={`Year ${year}`}
+                onChange={(e) => setYear(Number(e.target.value))}
+                onKeyDown={handleKey}
+              />
+              <span className="w-11 shrink-0 text-right font-mono text-[13px] text-text-low tabular">
+                {MAX_YEAR}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-ds-6">
+              <div>
+                <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-text-low">
+                  Value uplift
+                </div>
+                <div className="font-mono text-[22px] font-medium text-brass-light tabular">
+                  +{uplift}%
+                </div>
               </div>
-            )}
+              <div>
+                <div className="mb-1 text-[11px] uppercase tracking-[0.08em] text-text-low">
+                  Confidence
+                </div>
+                <div className="font-mono text-base text-text-hi tabular">
+                  {confidence}%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. CTA — browse lives in corridor rail (no duplicate intent) */}
+          <div data-hero="cta" className="flex flex-wrap items-center gap-ds-3 opacity-0">
+            <Link href="/copilot" className="btn-primary focus-brass">
+              Ask the copilot
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Scroll cue */}
-      <div
-        className="absolute bottom-5 left-6 md:left-12 flex items-center gap-2 font-mono text-[11px] text-text-low"
-        aria-hidden="true"
-      >
-        <div className="w-px h-5 bg-text-low/40" />
-        <span>scroll</span>
+        {/* Right column spacer — map field breathes on desktop */}
+        <div className="pointer-events-none hidden lg:col-span-6 xl:col-span-7 lg:block" aria-hidden="true" />
       </div>
-    </div>
+    </section>
   );
 }

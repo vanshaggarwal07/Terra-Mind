@@ -25,7 +25,7 @@ export function Citation({
           href={citation.source_document}
           target="_blank"
           rel="noreferrer"
-          className="text-cyan hover:text-cyan/80 underline underline-offset-2 focus-brass"
+          className="text-brass-light underline underline-offset-2 hover:text-brass focus-brass"
         >
           {label}
         </a>

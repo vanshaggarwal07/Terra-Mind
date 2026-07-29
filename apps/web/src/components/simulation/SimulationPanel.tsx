@@ -16,7 +16,7 @@ import { cn } from "@/lib/cn";
  * dashed band indicator, "hypothetical" badge, no live data styling.
  */
 function fmt(n: number | null | undefined, unit?: string | null): string {
-  if (n === null || n === undefined) return "—";
+  if (n === null || n === undefined) return "-";
   const r = Math.abs(n) >= 100 ? Math.round(n).toLocaleString("en-IN") : n.toFixed(2);
   return unit ? `${r} ${unit}` : r;
 }
@@ -104,19 +104,16 @@ export function SimulationPanel({ localityId }: { localityId: string }) {
   }
 
   return (
-    <Card title="04 — What-if simulation">
-      {/* Hypothetical label — always visible */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="font-mono text-[10px] text-brass border border-brass/30 rounded-sm px-1.5 py-0.5">
+    <Card title="What-if simulation">
+      <div className="mb-ds-4 flex items-center gap-ds-2">
+        <span className="rounded-control border border-brass/30 px-1.5 py-0.5 font-mono text-[10px] text-brass">
           hypothetical · not a prediction
         </span>
-        <span className="text-[11px] text-text-low">
-          nothing is saved
-        </span>
+        <span className="text-[11px] text-text-low">nothing is saved</span>
       </div>
 
-      <p className="text-sm text-text-mid font-voice italic mb-5">
-        Explore how forecasts would shift IF a new metro landed nearby.
+      <p className="mb-ds-5 text-sm text-text-mid">
+        Explore how forecasts would shift if a new metro landed nearby.
       </p>
 
       {/* Sliders */}
@@ -216,7 +213,7 @@ export function SimulationPanel({ localityId }: { localityId: string }) {
       <div className="mt-4">
         <Disclaimer variant="prediction">
           {result?.disclaimer ??
-            "Hypothetical what-if only — not a prediction that this will happen. Simulated results are clearly distinct from live forecasts and are not saved."}
+            "Hypothetical what-if only - not a prediction that this will happen. Simulated results are clearly distinct from live forecasts and are not saved."}
         </Disclaimer>
       </div>
     </Card>

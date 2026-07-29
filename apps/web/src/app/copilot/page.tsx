@@ -2,17 +2,20 @@ import { CopilotChat } from "@/components/copilot/CopilotChat";
 
 export default function CopilotPage() {
   return (
-    <main className="max-w-3xl mx-auto px-6 md:px-12 py-12">
-      <div className="mb-8">
-        <h1 className="font-display font-medium text-[clamp(28px,4vw,44px)] text-text-hi mb-3">
+    <main className="mx-auto max-w-3xl px-ds-5 py-ds-7 md:px-ds-7 md:py-ds-8">
+      <header className="mb-ds-6 max-w-xl">
+        <h1 className="mb-ds-3 font-display text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.1] text-text-hi">
           Copilot
         </h1>
-        <p className="font-voice italic text-text-mid text-lg max-w-xl">
+        <p className="font-display text-base text-text-mid md:text-lg">
           Ask about verified infrastructure, timelines, forecast bands, or RERA
-          records. Every answer cites its source. Nothing here is investment advice.
+          records. Every answer cites its source.
         </p>
+      </header>
+
+      <div className="rounded-surface border border-line-contour bg-ink-2/40 p-ds-4 md:p-ds-5">
+        <CopilotChat />
       </div>
-      <CopilotChat />
     </main>
   );
 }

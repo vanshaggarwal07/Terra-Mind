@@ -8,32 +8,41 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // --- Terra-Mind cartographer's studio palette ---
-        // Backgrounds
-        ink: "var(--color-ink)",          // #0A1A22 — base dark surface
-        "ink-2": "var(--color-ink-2)",    // #0F2530 — elevated surface
-        "ink-3": "var(--color-ink-3)",    // #142E3A — double-elevated
+        // Surfaces
+        ink: "var(--color-ink)",
+        "ink-2": "var(--color-ink-2)",
+        "ink-3": "var(--color-ink-3)",
+        "ink-4": "var(--color-ink-4)",
 
-        // Accents
-        cyan: "var(--color-cyan)",              // #6FB8C9 — contour/secondary
-        brass: "var(--color-brass)",            // #C89A4C — primary CTA accent
-        "brass-light": "var(--color-brass-light)", // #E4C481 — readout text
+        // Accent (ONE)
+        brass: "var(--color-brass)",
+        "brass-light": "var(--color-brass-light)",
+        "brass-dim": "var(--color-brass-dim)",
 
-        // Light surface
-        parchment: "var(--color-parchment)",   // #F2ECDE — light mode / text
+        // Structural / map (not brand accent)
+        contour: "var(--color-contour)",
+        cyan: "var(--color-cyan)", // legacy alias → contour
 
-        // Semantic only — never decorative
-        moss: "var(--color-moss)",    // #7A9B76 — positive signal
-        clay: "var(--color-clay)",    // #B5623F — risk/caution flag
-
-        // Text levels
+        // Text / light surface token
+        parchment: "var(--color-parchment)",
         "text-hi": "var(--color-text-hi)",
         "text-mid": "var(--color-text-mid)",
         "text-low": "var(--color-text-low)",
+        "text-faint": "var(--color-text-faint)",
+
+        // Semantic status only
+        moss: "var(--color-moss)",
+        clay: "var(--color-clay)",
+
+        // Lines
+        line: "var(--color-line)",
+        "line-strong": "var(--color-line-strong)",
+        "line-contour": "var(--color-line-contour)",
       },
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
-        voice: ["var(--font-voice)", "serif"],
+        // voice aliases display (Fraunces removed)
+        voice: ["var(--font-voice)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       fontSize: {
@@ -44,20 +53,55 @@ module.exports = {
         "data-sm": ["14px", { lineHeight: "1.4" }],
         "data-lg": ["20px", { lineHeight: "1.4" }],
       },
+      // Parallel design-system scale (do not override Tailwind 1-12 defaults
+      // until sections are rebuilt onto ds-* tokens).
+      spacing: {
+        "ds-1": "var(--space-1)",
+        "ds-2": "var(--space-2)",
+        "ds-3": "var(--space-3)",
+        "ds-4": "var(--space-4)",
+        "ds-5": "var(--space-5)",
+        "ds-6": "var(--space-6)",
+        "ds-7": "var(--space-7)",
+        "ds-8": "var(--space-8)",
+        "ds-9": "var(--space-9)",
+        nav: "var(--nav-h)",
+      },
+      maxWidth: {
+        content: "var(--content-max)",
+      },
       borderRadius: {
-        card: "3px",
-        pill: "999px",
+        control: "var(--radius-control)",
+        surface: "var(--radius-surface)",
+        card: "var(--radius-surface)",
+        pill: "var(--radius-pill)",
       },
       boxShadow: {
-        card: "0 1px 3px rgba(0,0,0,0.4)",
-        "card-hover": "0 4px 16px rgba(0,0,0,0.5)",
+        card: "var(--shadow-card)",
+        "card-hover": "var(--shadow-card-hover)",
+        focus: "var(--shadow-focus)",
+      },
+      zIndex: {
+        base: "var(--z-base)",
+        raised: "var(--z-raised)",
+        sticky: "var(--z-sticky)",
+        nav: "var(--z-nav)",
+        overlay: "var(--z-overlay)",
+        modal: "var(--z-modal)",
+        toast: "var(--z-toast)",
       },
       transitionTimingFunction: {
-        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "out-expo": "var(--ease-out-expo)",
+        "out-soft": "var(--ease-out-soft)",
+      },
+      transitionDuration: {
+        fast: "var(--duration-fast)",
+        mid: "var(--duration-mid)",
+        slow: "var(--duration-slow)",
       },
       animation: {
-        "draw-in": "draw-in 2.6s ease forwards",
-        "fade-up": "fade-up 0.5s ease forwards",
+        "draw-in": "draw-in 2.6s var(--ease-out-soft) forwards",
+        "fade-up": "fade-up 0.6s var(--ease-out-expo) forwards",
       },
       keyframes: {
         "draw-in": {
@@ -65,7 +109,7 @@ module.exports = {
           to: { strokeDashoffset: "0" },
         },
         "fade-up": {
-          from: { opacity: "0", transform: "translateY(18px)" },
+          from: { opacity: "0", transform: "translateY(24px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
       },

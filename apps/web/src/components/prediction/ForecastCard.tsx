@@ -16,12 +16,12 @@ import { Disclaimer } from "@/components/trust/Disclaimer";
  * ALWAYS renders ConfidenceBand + Disclaimer — never a bare number.
  * Missing / insufficient-data forecasts shown honestly as empty states.
  */
-const LABELS: Record<PredictionDomain, { label: string; icon: string }> = {
-  price:   { label: "Price / sqft",        icon: "₹" },
-  traffic: { label: "Traffic congestion",  icon: "🚗" },
-  flood:   { label: "Flood risk",          icon: "💧" },
-  water:   { label: "Groundwater depth",   icon: "🌊" },
-  aqi:     { label: "Air quality (AQI)",   icon: "🌫" },
+const LABELS: Record<PredictionDomain, string> = {
+  price: "Price / sqft",
+  traffic: "Traffic congestion",
+  flood: "Flood risk",
+  water: "Groundwater depth",
+  aqi: "Air quality (AQI)",
 };
 
 const ORDER: PredictionDomain[] = ["price", "flood", "aqi", "water", "traffic"];
@@ -33,16 +33,15 @@ function DomainRow({
   domain: PredictionDomain;
   env: PredictionEnvelope;
 }) {
-  const { label, icon } = LABELS[domain];
+  const label = LABELS[domain];
   const hasBand =
     env.prediction_low != null && env.prediction_high != null;
 
   return (
-    <div className="py-4 border-b border-white/[0.06] last:border-0">
-      <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-2">
-          <span aria-hidden="true">{icon}</span>
-          <span className="font-display font-medium text-sm text-text-hi">
+    <div className="border-b border-line py-ds-4 last:border-0">
+      <div className="mb-ds-3 flex items-center justify-between">
+        <div className="flex items-center gap-ds-2">
+          <span className="font-display text-sm font-medium text-text-hi">
             {label}
           </span>
         </div>
@@ -61,7 +60,7 @@ function DomainRow({
         />
       ) : (
         <p className="text-[12px] text-text-low italic">
-          No estimate — insufficient data for this locality.
+          No estimate - insufficient data for this locality.
         </p>
       )}
 
@@ -111,7 +110,7 @@ export function ForecastCard({ localityId }: { localityId?: string }) {
       {loaded && available.length === 0 && (
         <p className="text-sm text-text-low">
           Forecast models are not available yet. Run{" "}
-          <code className="font-mono text-xs text-cyan">
+          <code className="font-mono text-xs text-brass-light">
             python -m ml.training.train
           </code>
           .
@@ -128,7 +127,7 @@ export function ForecastCard({ localityId }: { localityId?: string }) {
       {(loaded && available.length > 0) || true ? (
         <div className="mt-4">
           <Disclaimer variant="prediction">
-            Forecasts are model estimates shown as ranges with confidence — not
+            Forecasts are model estimates shown as ranges with confidence - not
             investment advice. Numbers come from statistical models trained on
             public data, not AI generation.
           </Disclaimer>

@@ -101,7 +101,7 @@ function TimelineRow({
     <div
       className={cn(
         "border border-white/[0.08] rounded-card p-3 cursor-pointer",
-        "hover:border-cyan/20 transition-colors bg-ink-2",
+        "bg-ink-2 transition-colors hover:border-brass/25",
       )}
       onClick={() => setOpen((o) => !o)}
       role="button"

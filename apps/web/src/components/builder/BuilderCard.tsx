@@ -38,10 +38,10 @@ export function BuilderCard({ builder }: { builder: Builder }) {
         <Table columns={["Project", "Status", "Promised", "Actual", "Source"]}>
           {builder.projects.map((p, i) => (
             <tr key={i}>
-              <Td>{p.name ?? "—"}</Td>
-              <Td>{p.status ?? "—"}</Td>
-              <Td>{p.promised_completion ?? "—"}</Td>
-              <Td>{p.actual_completion ?? "—"}</Td>
+              <Td>{p.name ?? "-"}</Td>
+              <Td>{p.status ?? "-"}</Td>
+              <Td>{p.promised_completion ?? "-"}</Td>
+              <Td>{p.actual_completion ?? "-"}</Td>
               <Td>
                 <Citation citation={p.citation} />
               </Td>

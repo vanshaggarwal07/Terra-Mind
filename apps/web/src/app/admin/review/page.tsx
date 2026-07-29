@@ -68,7 +68,7 @@ export default function ReviewDashboard() {
         <p className="text-sm text-clay mb-4">Error: {error}</p>
       )}
       {!loading && items.length === 0 && (
-        <p className="text-sm text-moss">Nothing pending — queue is clear.</p>
+        <p className="text-sm text-moss">Nothing pending - queue is clear.</p>
       )}
 
       <ul className="space-y-4">

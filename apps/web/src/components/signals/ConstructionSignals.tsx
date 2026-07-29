@@ -92,7 +92,7 @@ export function ConstructionSignals({ localityId }: { localityId?: string }) {
 
       <div className="mt-4">
         <Disclaimer variant="prediction">
-          These signals are pattern-detected from satellite imagery — not verified
+          These signals are pattern-detected from satellite imagery - not verified
           against official sources. They may indicate activity or may be false
           positives. Do not act on these alone.
         </Disclaimer>

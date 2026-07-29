@@ -36,7 +36,7 @@ export function ScoreCard({ envelope }: { envelope: PredictionEnvelope }) {
       title="Future Intelligence Score"
       actions={
         <button
-          className="text-xs text-text-low hover:text-cyan transition-colors focus-brass px-2 py-1"
+          className="px-2 py-1 text-xs text-text-low transition-colors hover:text-brass-light focus-brass"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
         >
@@ -146,7 +146,7 @@ export function ScoreCard({ envelope }: { envelope: PredictionEnvelope }) {
       <div className="mt-4">
         <Disclaimer variant="prediction">
           The Future Intelligence Score is a rule-weighted sum of confirmed
-          infrastructure signals — no ML. It is an estimate, not investment advice.
+          infrastructure signals - no ML. It is an estimate, not investment advice.
         </Disclaimer>
       </div>
     </Card>
