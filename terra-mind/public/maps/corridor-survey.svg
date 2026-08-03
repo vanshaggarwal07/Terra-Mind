@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="land" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0D1520"/>
+      <stop offset="45%" stop-color="#121C28"/>
+      <stop offset="100%" stop-color="#0A1018"/>
+    </linearGradient>
+    <linearGradient id="road" x1="180" y1="860" x2="820" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3D5A6C"/>
+      <stop offset="50%" stop-color="#FF6B35"/>
+      <stop offset="100%" stop-color="#7C9885"/>
+    </linearGradient>
+    <pattern id="hatch" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+      <line x1="0" y1="0" x2="0" y2="28" stroke="#1C2C36" stroke-width="1" opacity="0.55"/>
+    </pattern>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#land)"/>
+  <rect width="1024" height="1024" fill="url(#hatch)" opacity="0.85"/>
+
+  <!-- survey grid -->
+  <g stroke="#1C2C36" stroke-width="1" opacity="0.7">
+    <path d="M64 0V1024M192 0V1024M320 0V1024M448 0V1024M576 0V1024M704 0V1024M832 0V1024M960 0V1024"/>
+    <path d="M0 64H1024M0 192H1024M0 320H1024M0 448H1024M0 576H1024M0 704H1024M0 832H1024M0 960H1024"/>
+  </g>
+  <g stroke="#2A4858" stroke-width="1.25" opacity="0.55">
+    <path d="M0 256H1024M0 512H1024M0 768H1024"/>
+    <path d="M256 0V1024M512 0V1024M768 0V1024"/>
+  </g>
+
+  <!-- Yamuna hint -->
+  <path d="M40 220C180 260 240 340 220 480C200 640 120 760 80 920" stroke="#1A3A48" stroke-width="28" stroke-linecap="round" opacity="0.55"/>
+  <path d="M40 220C180 260 240 340 220 480C200 640 120 760 80 920" stroke="#243E4C" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Yamuna Expressway corridor -->
+  <path d="M210 880C320 780 390 700 460 600C540 480 620 360 780 210" stroke="#0A0E12" stroke-width="34" stroke-linecap="round"/>
+  <path d="M210 880C320 780 390 700 460 600C540 480 620 360 780 210" stroke="url(#road)" stroke-width="16" stroke-linecap="round"/>
+  <path d="M210 880C320 780 390 700 460 600C540 480 620 360 780 210" stroke="#E8E4DC" stroke-width="1.5" stroke-dasharray="10 14" stroke-linecap="round" opacity="0.45"/>
+
+  <!-- Noida node -->
+  <circle cx="220" cy="870" r="18" fill="#0A0E12" stroke="#2A4858" stroke-width="2"/>
+  <circle cx="220" cy="870" r="5" fill="#E8E4DC"/>
+  <text x="248" y="876" fill="#8B9099" font-family="ui-monospace, monospace" font-size="22" letter-spacing="2">NOIDA</text>
+
+  <!-- Greater Noida -->
+  <circle cx="430" cy="640" r="12" fill="#0A0E12" stroke="#2A4858" stroke-width="1.5"/>
+  <circle cx="430" cy="640" r="3.5" fill="#7C9885"/>
+  <text x="450" y="645" fill="#6B7280" font-family="ui-monospace, monospace" font-size="16" letter-spacing="1">G. NOIDA</text>
+
+  <!-- Jewar airport node -->
+  <circle cx="780" cy="210" r="46" fill="none" stroke="#FF6B35" stroke-width="2" opacity="0.85"/>
+  <circle cx="780" cy="210" r="28" fill="none" stroke="#FF6B35" stroke-width="1.25" stroke-dasharray="4 6" opacity="0.7"/>
+  <circle cx="780" cy="210" r="6" fill="#FF6B35"/>
+  <text x="836" y="204" fill="#E8E4DC" font-family="ui-monospace, monospace" font-size="20" letter-spacing="2">JEWAR</text>
+  <text x="836" y="228" fill="#8B9099" font-family="ui-monospace, monospace" font-size="14" letter-spacing="1">AIRPORT NODE</text>
+
+  <!-- parcel plot marker zone (approx mid-corridor) -->
+  <rect x="472" y="508" width="56" height="56" fill="#FF6B35" fill-opacity="0.12" stroke="#FF6B35" stroke-width="1.5"/>
+  <text x="538" y="542" fill="#FF6B35" font-family="ui-monospace, monospace" font-size="14" letter-spacing="1">PLOT</text>
+
+  <text x="48" y="56" fill="#E8E4DC" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" letter-spacing="6">CORRIDOR SURVEY</text>
+  <text x="48" y="86" fill="#8B9099" font-family="ui-monospace, monospace" font-size="16" letter-spacing="2">NOIDA ’ YAMUNA EXPRESSWAY ’ JEWAR</text>
+</svg>
