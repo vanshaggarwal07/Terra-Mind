@@ -1,23 +1,4 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.eggs/
-build/
-dist/
-.venv/
-venv/
-.env
-.mypy_cache/
-.ruff_cache/
-.pytest_cache/
-.coverage
-htmlcov/
-coverage.xml
 
-# Poetry / uv
-poetry.lock
-# (kept out for the template; enable pinning in a real project)
 
 # Node / Next.js
 node_modules/
@@ -26,25 +7,3 @@ out/
 apps/web/.env*.local
 *.tsbuildinfo
 pnpm-lock.yaml
-
-# Dagster
-tmp*/
-.dagster/
-dagster_home/
-
-# Data / artifacts (root data/ only — do not ignore apps/*/src/data source)
-*.parquet
-/data/
-models/artifacts/
-*.tif
-*.tiff
-
-# Phase 3 ML artifacts (trained models + materialized features)
-.model_registry/
-/feature_store/
-
-# OS / editor
-.DS_Store
-.idea/
-.vscode/
-*.log
