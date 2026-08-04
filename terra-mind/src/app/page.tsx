@@ -1,4 +1,4 @@
-import { LandingHero } from "@/components/hero/LandingHero";
+import { ParallaxSections } from "@/components/parallax/ParallaxSections";
 import { LinkButton } from "@/components/shared/LinkButton";
 import { PropertyUnfold } from "@/components/unfold/PropertyUnfold";
 import { DUMMY_LISTINGS } from "@/lib/listings";
@@ -8,7 +8,7 @@ export default function HomePage() {
 
   return (
     <>
-      <LandingHero />
+      <ParallaxSections />
 
       <section className="mx-auto max-w-6xl px-4 py-16 md:px-6">
         <div className="grid gap-8 md:grid-cols-[1.1fr_0.9fr] md:items-end">

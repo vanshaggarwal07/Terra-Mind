@@ -1,33 +1,39 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
+import { IBM_Plex_Mono } from "next/font/google";
 
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
+const clashDisplay = localFont({
+  src: "../fonts/ClashDisplay-Variable.woff2",
+  variable: "--font-display",
+  weight: "200 700",
   display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const generalSans = localFont({
+  src: [
+    { path: "../fonts/GeneralSans-Variable.woff2", weight: "200 700", style: "normal" },
+    { path: "../fonts/GeneralSans-VariableItalic.woff2", weight: "200 700", style: "italic" },
+  ],
+  variable: "--font-body",
   display: "swap",
 });
 
-const jetbrains = JetBrains_Mono({
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Terra-Mind · Corridor property intelligence",
   description:
-    "Precision property intelligence for the Noida / Yamuna Expressway / Jewar Airport corridor.",
+    "Precision property intelligence for the Noida, Yamuna Expressway and Jewar Airport corridor.",
 };
 
 export default function RootLayout({
@@ -38,7 +44,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrains.variable} h-full dark`}
+      className={`${clashDisplay.variable} ${generalSans.variable} ${plexMono.variable} h-full`}
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col font-sans">
         <SiteHeader />
