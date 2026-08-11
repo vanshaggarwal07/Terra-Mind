@@ -108,11 +108,14 @@ export function NewsFeed({
             duration: 0.55,
             ease: "power3.out",
           });
+          // `amount` bounds the total spread regardless of card count, so a
+          // feed of 500+ items still finishes revealing in well under a second
+          // instead of compounding into a multi-second per-card delay.
           gsap.from(".news-card", {
             opacity: 0,
             y: 18,
             duration: 0.5,
-            stagger: 0.05,
+            stagger: { each: 0.03, amount: 0.4, from: "start" },
             delay: 0.08,
             ease: "power2.out",
             clearProps: "transform",
@@ -138,37 +141,44 @@ export function NewsFeed({
       />
 
       <div className="relative">
-        <NewsStatusBar status={status} unavailable={statusNote} />
+        <header className="news-masthead mt-6 md:mt-8">
+          <div className="flex flex-col gap-8 border-b border-steel-line pb-8 md:flex-row md:items-end md:justify-between md:gap-10 md:pb-10">
+            <div className="max-w-xl">
+              <p className="inline-flex items-center gap-2 rounded-full border border-steel-line bg-panel px-4 py-1.5 text-sm text-dim shadow-sm">
+                <span className="size-1.5 rounded-full bg-signal" aria-hidden />
+                Live corridor signal feed
+              </p>
+              <h1 className="mt-5 font-display text-4xl leading-[1.08] tracking-tight text-foreground md:text-5xl">
+                Corridor news, <span className="text-signal">without the noise.</span>
+              </h1>
+              <p className="mt-4 max-w-lg text-base leading-relaxed text-dim">
+                Government notices and press signals across Noida, YEIDA, Jewar
+                Airport, and the full ~100&nbsp;km ring — deduplicated and
+                categorized as they land.
+              </p>
+            </div>
 
-        <header className="news-masthead mt-8 grid gap-8 border-b border-steel-line pb-8 md:mt-10 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:items-end md:gap-10 md:pb-10">
-          <div>
-            <h1 className="font-display text-[2.35rem] font-medium leading-[1.05] tracking-tight text-foreground md:text-5xl lg:text-[3.4rem]">
-              Corridor
-              <span className="text-signal"> signal</span>
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-dim md:text-base">
-              Live web and government updates across the Noida–YEIDA–Jewar core
-              and the full ~100 km ring, including Dadri, Bulandshahr, Ghaziabad,
-              Faridabad, and nearby districts. Every sync adds to the archive.
-            </p>
+            <div className="shrink-0 rounded-3xl border border-steel-line bg-panel p-6 text-center soft-shadow md:text-right">
+              <p className="font-display text-5xl tabular-nums tracking-tight text-foreground md:text-6xl">
+                {filtered.length}
+              </p>
+              <p className="mt-1 max-w-[14rem] text-sm text-dim md:ml-auto">
+                {deferredQuery || filter !== "all"
+                  ? `of ${items.length} stored stories`
+                  : "stories in the archive"}
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-4 md:items-end md:text-right">
-            <p className="font-display text-5xl tabular-nums tracking-tight text-foreground md:text-6xl">
-              {filtered.length}
-            </p>
-            <p className="max-w-[16rem] font-data text-[10px] uppercase tracking-[0.16em] text-dim">
-              {deferredQuery || filter !== "all"
-                ? `of ${items.length} stored stories`
-                : "stories in the archive"}
-            </p>
+          <div className="pt-6">
+            <NewsStatusBar status={status} unavailable={statusNote} />
           </div>
         </header>
 
-        <div className="sticky top-14 z-20 -mx-4 mt-6 border-y border-steel-line/80 bg-background/90 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6">
-          <div className="flex flex-col gap-3">
+        <div className="sticky top-16 z-20 mt-6 rounded-3xl border border-steel-line bg-panel/90 p-3 shadow-sm backdrop-blur-md md:mt-8">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div
-              className="-mx-1 flex flex-wrap gap-2 px-1"
+              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               role="tablist"
               aria-label="Filter by category"
             >
@@ -187,10 +197,10 @@ export function NewsFeed({
               ))}
             </div>
 
-            <label className="relative w-full max-w-md">
+            <label className="relative w-full shrink-0 md:w-64">
               <span className="sr-only">Search news</span>
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-dim"
+                className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-dim"
                 aria-hidden
               />
               <input
@@ -198,15 +208,15 @@ export function NewsFeed({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search keyword…"
-                className="w-full border border-steel-line bg-panel/80 py-2.5 pl-9 pr-3 font-data text-[11px] text-foreground placeholder:text-dim/70 outline-none transition-[border-color,background-color] focus:border-signal focus:bg-panel"
+                className="w-full rounded-full border border-steel-line bg-secondary/60 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-dim outline-none transition-colors focus:border-signal focus:bg-panel"
               />
             </label>
           </div>
         </div>
 
-        <div className="mt-8 space-y-3 md:mt-10 md:space-y-4">
+        <div className="mt-8 space-y-4 md:mt-10">
           {filtered.length === 0 ? (
-            <div className="border border-dashed border-steel-line px-6 py-20 text-center">
+            <div className="rounded-3xl border border-dashed border-steel-line bg-panel/40 px-6 py-20 text-center">
               <p className="font-display text-xl text-foreground">
                 {emptyMessage}
               </p>
@@ -218,7 +228,7 @@ export function NewsFeed({
             <>
               {lead ? <NewsCard key={lead.id} item={lead} featured /> : null}
               {rest.length > 0 ? (
-                <div className="grid gap-3 pt-2 md:gap-3.5">
+                <div className="grid gap-4 pt-1">
                   {rest.map((item) => (
                     <NewsCard key={item.id} item={item} />
                   ))}
@@ -248,10 +258,10 @@ function FilterChip({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "shrink-0 border px-3 py-2 font-data text-[10px] uppercase tracking-[0.16em] transition-[color,background-color,border-color,transform] duration-200 active:scale-[0.98]",
+        "shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium transition-colors active:scale-[0.98]",
         active
-          ? "border-signal bg-signal text-background"
-          : "border-steel-line bg-transparent text-dim hover:border-steel hover:text-foreground",
+          ? "bg-foreground text-background"
+          : "bg-secondary text-dim hover:text-foreground",
       )}
     >
       {label}

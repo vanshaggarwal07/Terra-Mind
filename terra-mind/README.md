@@ -51,7 +51,7 @@ npm run news:smoke   # insert + read one row
 npm run news:sync    # run full aggregator once
 ```
 
-Corporate SSL proxies may need: `NODE_TLS_REJECT_UNAUTHORIZED=0 npm run news:sync` (never on Vercel).
+Corporate SSL proxies (e.g. managed laptops that re-sign HTTPS traffic) are handled automatically: `src/lib/devTls.ts` relaxes certificate verification for local dev only, so `npm run dev` / `npm run news:sync` work out of the box. It is a strict no-op when `NODE_ENV=production` or `VERCEL` is set, so production always keeps full certificate verification.
 
 ### Automatic sync (4×/day)
 

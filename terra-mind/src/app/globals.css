@@ -4,53 +4,102 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Terra-Mind — precision instrument palette (binding) */
+/* Terra-Mind — corridor marketplace palette (light, warm, rounded) */
 :root {
-  --background: #0a0e12;
-  --panel: #111820;
-  --foreground: #e8e4dc;
-  --dim: #8b9099;
-  --steel: #2a4858;
-  --steel-line: #1c2c36;
-  --signal: #ff6b35;
-  --growth: #7c9885;
+  --background: #f6f7f9;
+  --panel: #ffffff;
+  --foreground: #12161c;
+  --dim: #667085;
+  --steel: #d7dce3;
+  --steel-line: #e6e9ee;
+  --signal: #c2410c;
+  --signal-tint: #fdece1;
+  --growth: #2f7d4f;
+  --growth-tint: #e7f5ec;
 
-  --card: #111820;
-  --card-foreground: #e8e4dc;
-  --popover: #111820;
-  --popover-foreground: #e8e4dc;
-  --primary: #ff6b35;
-  --primary-foreground: #0a0e12;
-  --secondary: #1c2c36;
-  --secondary-foreground: #e8e4dc;
-  --muted: #1c2c36;
-  --muted-foreground: #8b9099;
-  --accent: #2a4858;
-  --accent-foreground: #e8e4dc;
-  --destructive: #b5623f;
-  --border: #1c2c36;
-  --input: #1c2c36;
-  --ring: #ff6b35;
-  --radius: 0.125rem;
+  --card: #ffffff;
+  --card-foreground: #12161c;
+  --popover: #ffffff;
+  --popover-foreground: #12161c;
+  --primary: #12161c;
+  --primary-foreground: #ffffff;
+  --secondary: #eef0f3;
+  --secondary-foreground: #12161c;
+  --muted: #eef0f3;
+  --muted-foreground: #667085;
+  --accent: #fdece1;
+  --accent-foreground: #c2410c;
+  --destructive: #b3261e;
+  --border: #e6e9ee;
+  --input: #e6e9ee;
+  --ring: #c2410c;
+  --radius: 1.25rem;
 
-  --chart-1: #ff6b35;
-  --chart-2: #7c9885;
-  --chart-3: #2a4858;
-  --chart-4: #8b9099;
-  --chart-5: #e8e4dc;
+  --chart-1: #c2410c;
+  --chart-2: #2f7d4f;
+  --chart-3: #12161c;
+  --chart-4: #667085;
+  --chart-5: #d7dce3;
 
-  --sidebar: #111820;
-  --sidebar-foreground: #e8e4dc;
-  --sidebar-primary: #ff6b35;
-  --sidebar-primary-foreground: #0a0e12;
-  --sidebar-accent: #1c2c36;
-  --sidebar-accent-foreground: #e8e4dc;
-  --sidebar-border: #1c2c36;
-  --sidebar-ring: #ff6b35;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #12161c;
+  --sidebar-primary: #c2410c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef0f3;
+  --sidebar-accent-foreground: #12161c;
+  --sidebar-border: #e6e9ee;
+  --sidebar-ring: #c2410c;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Terra-Mind — dark mode (warm charcoal, brightened orange/green accents) */
+.dark {
+  color-scheme: dark;
+
+  --background: #0c0e11;
+  --panel: #15181c;
+  --foreground: #f3f4f6;
+  --dim: #97a1ad;
+  --steel: #2b2f36;
+  --steel-line: #23262b;
+  --signal: #fb7a3c;
+  --signal-tint: #2a1810;
+  --growth: #4ade80;
+  --growth-tint: #12241a;
+
+  --card: #15181c;
+  --card-foreground: #f3f4f6;
+  --popover: #15181c;
+  --popover-foreground: #f3f4f6;
+  --primary: #f3f4f6;
+  --primary-foreground: #0c0e11;
+  --secondary: #1c1f24;
+  --secondary-foreground: #f3f4f6;
+  --muted: #1c1f24;
+  --muted-foreground: #97a1ad;
+  --accent: #2a1810;
+  --accent-foreground: #fb7a3c;
+  --destructive: #f87171;
+  --border: #23262b;
+  --input: #23262b;
+  --ring: #fb7a3c;
+
+  --chart-1: #fb7a3c;
+  --chart-2: #4ade80;
+  --chart-3: #f3f4f6;
+  --chart-4: #97a1ad;
+  --chart-5: #2b2f36;
+
+  --sidebar: #15181c;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-primary: #fb7a3c;
+  --sidebar-primary-foreground: #0c0e11;
+  --sidebar-accent: #1c1f24;
+  --sidebar-accent-foreground: #f3f4f6;
+  --sidebar-border: #23262b;
+  --sidebar-ring: #fb7a3c;
 }
 
 @theme inline {
@@ -61,7 +110,9 @@
   --color-steel: var(--steel);
   --color-steel-line: var(--steel-line);
   --color-signal: var(--signal);
+  --color-signal-tint: var(--signal-tint);
   --color-growth: var(--growth);
+  --color-growth-tint: var(--growth-tint);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -94,10 +145,10 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-heading: var(--font-heading);
-  --radius-sm: 1px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-xl: 4px;
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
 }
 
 @layer base {
@@ -106,17 +157,13 @@
   }
 
   html {
-    @apply font-sans scroll-smooth;
-    color-scheme: dark;
+    @apply font-sans;
+    color-scheme: light;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    background-image:
-      linear-gradient(to right, color-mix(in srgb, var(--steel-line) 55%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in srgb, var(--steel-line) 55%, transparent) 1px, transparent 1px);
-    background-size: 48px 48px;
-    background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1,
@@ -130,7 +177,7 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--signal) 35%, transparent);
+    background: color-mix(in srgb, var(--signal) 22%, transparent);
     color: var(--foreground);
   }
 }
@@ -160,14 +207,19 @@
 
   .steel-frame {
     border: 1px solid var(--steel-line);
-    background: color-mix(in srgb, var(--panel) 92%, transparent);
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--steel) 25%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--background) 80%, transparent);
+    background: var(--panel);
+    box-shadow: 0 1px 2px color-mix(in srgb, black 4%, transparent),
+      0 12px 32px -12px color-mix(in srgb, black 12%, transparent);
   }
 
   .signal-glow {
-    box-shadow: 0 0 24px color-mix(in srgb, var(--signal) 28%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--signal) 18%, transparent),
+      0 12px 28px -8px color-mix(in srgb, var(--signal) 35%, transparent);
+  }
+
+  .soft-shadow {
+    box-shadow: 0 1px 2px color-mix(in srgb, black 4%, transparent),
+      0 20px 40px -20px color-mix(in srgb, black 16%, transparent);
   }
 
   .survey-hatch {
@@ -175,8 +227,8 @@
       -45deg,
       transparent,
       transparent 6px,
-      color-mix(in srgb, var(--steel) 18%, transparent) 6px,
-      color-mix(in srgb, var(--steel) 18%, transparent) 7px
+      color-mix(in srgb, var(--steel) 40%, transparent) 6px,
+      color-mix(in srgb, var(--steel) 40%, transparent) 7px
     );
   }
 

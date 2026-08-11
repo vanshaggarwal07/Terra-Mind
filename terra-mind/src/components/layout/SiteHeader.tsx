@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { LinkButton } from "@/components/shared/LinkButton";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -19,17 +20,20 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-steel-line bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="group flex items-center gap-3">
-          <span className="inline-flex size-8 items-center justify-center border border-steel font-data text-[10px] text-signal">
-            TM
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="inline-flex size-8 items-center justify-center rounded-full bg-foreground font-display text-[13px] text-background">
+            T
           </span>
-          <span className="font-display text-sm tracking-[0.18em] text-foreground uppercase">
+          <span className="font-display text-base tracking-tight text-foreground">
             Terra-Mind
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
+        <nav
+          className="hidden items-center gap-1 rounded-full border border-steel-line bg-panel/70 p-1 md:flex"
+          aria-label="Primary"
+        >
           {NAV.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
@@ -37,29 +41,33 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative font-data text-[11px] uppercase tracking-[0.2em] transition-colors",
-                  active ? "text-signal" : "text-dim hover:text-foreground",
+                  "relative rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                  active ? "text-foreground" : "text-dim hover:text-foreground",
                 )}
               >
-                {item.label}
                 {active ? (
                   <motion.span
-                    layoutId="nav-underline"
-                    className="absolute -bottom-1 left-0 h-px w-full bg-signal"
+                    layoutId="nav-pill"
+                    className="absolute inset-0 rounded-full bg-secondary"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 ) : null}
+                <span className="relative z-10">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <LinkButton
-          href="/enquire"
-          size="sm"
-          className="bg-signal text-background hover:bg-signal/90"
-        >
-          Book a call
-        </LinkButton>
+        <div className="flex items-center gap-2.5">
+          <ThemeToggle />
+          <LinkButton
+            href="/enquire"
+            size="sm"
+            className="bg-foreground px-5 text-background hover:bg-foreground/85"
+          >
+            Book a call
+          </LinkButton>
+        </div>
       </div>
     </header>
   );

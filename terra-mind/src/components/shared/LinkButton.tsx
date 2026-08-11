@@ -25,7 +25,7 @@ export function LinkButton({
       render={<Link href={href} {...props} />}
       variant={variant}
       size={size}
-      className={cn("rounded-sm", className)}
+      className={cn("rounded-full", className)}
     >
       {children}
     </Button>
