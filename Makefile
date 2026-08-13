@@ -28,15 +28,6 @@ bootstrap: $(VENV) ## Install all Python packages (editable) + web deps
 		echo "pnpm not found — skipping web deps (install pnpm to enable the frontend)"; \
 	fi
 
-.PHONY: up
-up: ## Start local infra (Postgres+PostGIS+pgvector, MinIO)
-	docker compose up -d
-	@echo "Postgres on :5432, MinIO on :9000 (console :9001)"
-
-.PHONY: down
-down: ## Stop local infra
-	docker compose down
-
 .PHONY: migrate
 migrate: ## Apply DB migrations (Alembic, in packages/warehouse)
 	$(VENV)/bin/alembic -c packages/warehouse/alembic.ini upgrade head

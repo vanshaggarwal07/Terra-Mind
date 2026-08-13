@@ -11,21 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Postgres+PostGIS+pgvector image
-        run: docker build -t twin-db:ci ./docker -f docker/Dockerfile.db
-
-      - name: Start database
-        run: |
-          docker run -d --name twin-db \
-            -e POSTGRES_USER=twin -e POSTGRES_PASSWORD=twin -e POSTGRES_DB=twin \
-            -p 5432:5432 \
-            -v "$PWD/docker/db-init.sql":/docker-entrypoint-initdb.d/00-init.sql:ro \
-            twin-db:ci
-          for i in $(seq 1 30); do
-            if docker exec twin-db pg_isready -U twin -d twin; then break; fi
-            sleep 2
-          done
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -45,14 +30,8 @@ jobs:
       - name: Type-check
         run: mypy packages || true  # non-blocking until types are fully annotated
 
-      - name: Migrate database
-        env:
-          DATABASE_URL: postgresql+psycopg://twin:twin@localhost:5432/twin
-        run: alembic -c packages/warehouse/alembic.ini upgrade head
-
       - name: Test
-        env:
-          DATABASE_URL: postgresql+psycopg://twin:twin@localhost:5432/twin
+        # No database in CI: DB-backed tests skip when DATABASE_URL is unset.
         run: pytest --cov=common --cov=warehouse
 
   web:

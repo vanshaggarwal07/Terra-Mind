@@ -17,22 +17,19 @@ packages/cv/           Phase 4 satellite change-detection
 packages/simulation/   Phase 4 what-if engine
 apps/web/              Next.js frontend
 infra/                 IaC (Phase 5)
-docker/                local DB init
 ```
 
 ## Prerequisites
 
 - Python 3.11+ (`.python-version` pins 3.11)
 - Node 18+ and `pnpm` (for `apps/web`)
-- Docker + Docker Compose (for local Postgres/PostGIS + MinIO)
 
 ## Quickstart
 
 ```bash
 cp .env.example .env          # then edit secrets
-make up                       # start Postgres+PostGIS+pgvector and MinIO
 make bootstrap                # create .venv and install all packages editable
-make migrate                  # apply the database schema
+make migrate                  # apply the database schema (needs a reachable DATABASE_URL)
 make test                     # run the Python test suite
 ```
 
@@ -51,7 +48,6 @@ make dagster    # Dagster dev UI (Phase 1+)
 ## Operations, deployment & compliance (Phase 5)
 
 - **Infrastructure as code:** [`infra/`](infra/README.md) — Terraform for managed Postgres (PostGIS+pgvector), object storage, ECS Fargate (API + Dagster), Secrets Manager, GPU **spot** batch, budgets, and observability. `dev`/`prod` via tfvars.
-- **CD:** [`.github/workflows/cd.yml`](.github/workflows/cd.yml) — build → push → gated migration → deploy dev → manual-approval prod, with circuit-breaker rollback.
 - **Observability:** the API `/ops/health`, `/ops/metrics`, `/ops/costs` surface + the web `/ops` dashboard consolidate ingestion, review, ML, cost, and API health. Portable Prometheus/Grafana config in [`infra/observability/`](infra/observability/README.md).
 - **Cost guards:** `common.budget` fails the paid line items (X/social, satellite, GPU) safe at their monthly caps; X/social and satellite/CV are off/gated by default.
 - **Compliance:** [`COMPLIANCE.md`](COMPLIANCE.md) maps every §0/§13 trust guarantee (facts-not-verdicts, advisory bands, human-verified high-stakes, attribution, robots/UA crawling) to its enforcing code and CI guard test. Run `pytest packages -k compliance`.
