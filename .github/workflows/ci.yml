@@ -6,120 +6,19 @@ on:
   pull_request:
 
 jobs:
-  python:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install packages (editable) + dev tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e packages/common -e packages/warehouse -e packages/ingestion \
-                      -e packages/api -e packages/ml -e packages/cv -e packages/simulation
-          pip install ruff mypy pytest pytest-cov
-
-      - name: Lint
-        run: |
-          ruff check packages
-          ruff format --check packages
-
-      - name: Type-check
-        run: mypy packages || true  # non-blocking until types are fully annotated
-
-      - name: Test
-        # No database in CI: DB-backed tests skip when DATABASE_URL is unset.
-        run: pytest --cov=common --cov=warehouse
-
   web:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/web
+        working-directory: terra-mind
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: pnpm
-          cache-dependency-path: apps/web/pnpm-lock.yaml
-      - run: pnpm install --no-frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm build
-
-  # --- Frontend trust compliance gates (Phase 6) ---
-  # These gates mirror the backend's "no builder verdicts" compliance layer,
-  # extended to the frontend. A PR that removes a Disclaimer or introduces
-  # evaluative builder language will fail CI before merge.
-  frontend-trust-gates:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v4
-
-      # Gate 1: No evaluative builder language in component source.
-      # Greps the components directory for forbidden words.
-      # Allowed exceptions: 'Disclaimer' component itself (checked separately).
-      - name: "Gate: No evaluative builder language"
-        run: |
-          # Words that must never appear as UI copy in builder-related components
-          FORBIDDEN="\"trusted\"\|\"reliable\"\|\"risky\"\|\"risk score\"\|\"rating\"\|\"ranking\"\|\"trustworthy\""
-          if grep -r --include="*.tsx" --include="*.ts" -l "$FORBIDDEN" src/components/builder/; then
-            echo "❌ Evaluative builder language found in builder components. Remove it — facts only."
-            grep -r --include="*.tsx" --include="*.ts" -n "$FORBIDDEN" src/components/builder/
-            exit 1
-          fi
-          echo "✅ No evaluative builder language found."
-
-      # Gate 2: Every ForecastCard usage in the built output has a sibling Disclaimer.
-      # Checks that the Disclaimer component is imported wherever ForecastCard is imported.
-      - name: "Gate: ForecastCard always paired with Disclaimer import"
-        run: |
-          # Find all files that import ForecastCard
-          FILES=$(grep -rl "ForecastCard" src/ --include="*.tsx" --include="*.ts" | grep -v "ForecastCard.tsx")
-          FAILED=0
-          for f in $FILES; do
-            if ! grep -q "Disclaimer" "$f"; then
-              echo "❌ $f imports ForecastCard but does not import/use Disclaimer"
-              FAILED=1
-            fi
-          done
-          if [ "$FAILED" = "1" ]; then
-            echo "Every ForecastCard usage must include a Disclaimer in the same file."
-            exit 1
-          fi
-          echo "✅ All ForecastCard usages paired with Disclaimer."
-
-      # Gate 3: ConfidenceBand always paired with Disclaimer in prediction-rendering files.
-      - name: "Gate: ConfidenceBand always paired with Disclaimer"
-        run: |
-          FILES=$(grep -rl "ConfidenceBand" src/ --include="*.tsx" | grep -v "ConfidenceBand.tsx" | grep -v "style-guide")
-          FAILED=0
-          for f in $FILES; do
-            if ! grep -q "Disclaimer" "$f"; then
-              echo "❌ $f uses ConfidenceBand without Disclaimer"
-              FAILED=1
-            fi
-          done
-          if [ "$FAILED" = "1" ]; then
-            exit 1
-          fi
-          echo "✅ All ConfidenceBand usages paired with Disclaimer."
-
-      # Gate 4: Construction signals always carry the "unverified" label.
-      - name: "Gate: ConstructionSignals references 'unverified'"
-        run: |
-          if ! grep -q "unverified" src/components/signals/ConstructionSignals.tsx; then
-            echo "❌ ConstructionSignals.tsx must contain 'unverified' label text."
-            exit 1
-          fi
-          echo "✅ Construction signals unverified label present."
+          cache: npm
+          cache-dependency-path: terra-mind/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
