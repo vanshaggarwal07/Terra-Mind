@@ -31,7 +31,7 @@ export function FlightPath({ className }: { className?: string }) {
       </defs>
 
       {/* Decorative topographic contour rings — ink only, not interactive */}
-      <g opacity="0.5" stroke="var(--contour)" strokeWidth="1" fill="none">
+      <g opacity="0.5" stroke="var(--steel)" strokeWidth="1" fill="none">
         <ellipse cx="120" cy="120" rx="70" ry="46" />
         <ellipse cx="120" cy="120" rx="110" ry="74" />
         <ellipse cx="330" cy="440" rx="90" ry="60" />

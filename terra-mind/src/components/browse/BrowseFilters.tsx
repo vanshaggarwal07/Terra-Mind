@@ -19,7 +19,7 @@ interface BrowseFiltersProps {
 
 export function BrowseFilters({ filters, regions, onChange }: BrowseFiltersProps) {
   return (
-    <div className="steel-frame grid gap-5 p-4 md:grid-cols-4 md:p-5">
+    <div className="steel-frame grid gap-5 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-5">
       <div className="space-y-2">
         <Label className="font-data text-[10px] uppercase tracking-[0.18em] text-dim">
           Location
@@ -77,6 +77,26 @@ export function BrowseFilters({ filters, regions, onChange }: BrowseFiltersProps
           onValueChange={(value) => {
             const next = Array.isArray(value) ? value[0] : value;
             onChange({ ...filters, airportMaxKm: Number(next) });
+          }}
+          className="py-3"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="font-data text-[10px] uppercase tracking-[0.18em] text-dim">
+          Film City ≤{" "}
+          <span className="text-foreground">
+            {filters.filmCityMaxKm >= 50 ? "any" : `${filters.filmCityMaxKm.toFixed(0)} km`}
+          </span>
+        </Label>
+        <Slider
+          min={5}
+          max={50}
+          step={1}
+          value={[filters.filmCityMaxKm]}
+          onValueChange={(value) => {
+            const next = Array.isArray(value) ? value[0] : value;
+            onChange({ ...filters, filmCityMaxKm: Number(next) });
           }}
           className="py-3"
         />

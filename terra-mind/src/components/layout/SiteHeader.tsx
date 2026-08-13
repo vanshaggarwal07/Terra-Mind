@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, Phone, X } from "lucide-react";
 
 import { LinkButton } from "@/components/shared/LinkButton";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { logActivity } from "@/lib/activity";
+import { telUrl } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -78,6 +80,19 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2 md:gap-2.5">
           <ThemeToggle />
+          <a
+            href={telUrl()}
+            aria-label="Call Terra-Mind"
+            onClick={() => {
+              void logActivity({
+                action: "call_click",
+                meta: { where: "site_header" },
+              });
+            }}
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-steel-line bg-panel text-foreground transition-colors hover:bg-secondary md:hidden"
+          >
+            <Phone className="size-4" strokeWidth={2} />
+          </a>
           <LinkButton
             href="/enquire"
             size="sm"

@@ -1,13 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Airplane } from "@phosphor-icons/react";
 
 import { DUMMY_LISTINGS } from "@/lib/listings";
+import type { PropertyListing } from "@/lib/types";
 
-function buildTimeline() {
+function buildTimeline(listings: PropertyListing[]) {
   const seen = new Map<string, { year: number; event: string; source: string }>();
-  for (const listing of DUMMY_LISTINGS) {
+  for (const listing of listings) {
     for (const item of listing.infraTimeline) {
       const key = `${item.year}-${item.event}`;
       if (!seen.has(key)) seen.set(key, item);
@@ -16,9 +18,13 @@ function buildTimeline() {
   return [...seen.values()].sort((a, b) => a.year - b.year).slice(0, 6);
 }
 
-const MILESTONES = buildTimeline();
+export function CorridorTimeline({
+  listings = DUMMY_LISTINGS,
+}: {
+  listings?: PropertyListing[];
+}) {
+  const MILESTONES = useMemo(() => buildTimeline(listings), [listings]);
 
-export function CorridorTimeline() {
   return (
     <section className="border-y border-steel-line bg-panel">
       <div className="mx-auto max-w-6xl px-4 py-20 md:px-6 md:py-28">

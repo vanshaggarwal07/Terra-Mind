@@ -25,6 +25,17 @@ export interface PropertyListing {
   infraTimeline: { year: number; event: string; source: string }[];
   transactions: { date: string; rate: number; type: string }[];
   imageHint: string;
+  /** Straight-line distance to the planned YEIDA Film City site (Sector 21). */
+  distanceToFilmCityKm?: number;
+  /** Measured drive time. When absent the UI shows a labelled estimate. */
+  driveMinutesToAirport?: number;
+  driveMinutesToFilmCity?: number;
+  /** Verification signals — rendered only when present, never fabricated. */
+  reraId?: string;
+  titleVerified?: boolean;
+  verifiedOn?: string;
+  verificationNotes?: string;
+  images?: { src: string; alt: string }[];
 }
 
 export interface ListingFilters {
@@ -32,6 +43,8 @@ export interface ListingFilters {
   priceMin: number;
   priceMax: number;
   airportMaxKm: number;
+  /** Max distance to the planned Film City site. At the slider max the filter is off. */
+  filmCityMaxKm: number;
   phase: ExpresswayPhase | "all";
 }
 
@@ -41,7 +54,10 @@ export type ActivityAction =
   | "filter_change"
   | "calculator_use"
   | "enquire_submit"
-  | "cta_click";
+  | "cta_click"
+  | "whatsapp_click"
+  | "call_click"
+  | "lead_capture";
 
 export interface ActivityPayload {
   action: ActivityAction;

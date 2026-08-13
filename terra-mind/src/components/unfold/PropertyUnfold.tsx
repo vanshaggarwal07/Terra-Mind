@@ -5,8 +5,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
+import { WhatsAppButton } from "@/components/contact/ContactButtons";
 import { LinkButton } from "@/components/shared/LinkButton";
-import { formatRate } from "@/lib/listings";
+import { PriceTrendChart } from "@/components/shared/PriceTrendChart";
+import { ProximityBadges } from "@/components/shared/ProximityBadges";
+import { VerificationBadge } from "@/components/shared/VerificationBadge";
+import { listingEnquiryMessage } from "@/lib/contact";
+import { calculatorHref, formatRate } from "@/lib/listings";
 import type { PropertyListing } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -182,31 +187,52 @@ export function PropertyUnfold({
                 </div>
                 <p className="font-data text-xs text-signal">{property.parcelId}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4 border-t border-steel-line pt-4">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Spot rate</p>
-                  <p className="mt-1 font-data text-lg text-foreground md:text-xl">
-                    {formatRate(property.pricePerSqYd)}
-                  </p>
+              <div className="border-t border-steel-line pt-4">
+                <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Spot rate</p>
+                    <p className="mt-1 font-data text-lg text-foreground md:text-xl">
+                      {formatRate(property.pricePerSqYd)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Uplift band</p>
+                    <p className="mt-1 font-data text-lg text-growth md:text-xl">
+                      +{property.growthPct.toFixed(1)}%
+                    </p>
+                  </div>
+                  <PriceTrendChart
+                    transactions={property.transactions}
+                    variant="sparkline"
+                    className="hidden md:block"
+                  />
                 </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Uplift band</p>
-                  <p className="mt-1 font-data text-lg text-growth md:text-xl">
-                    +{property.growthPct.toFixed(1)}%
-                  </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <ProximityBadges listing={property} variant="compact" />
+                  <VerificationBadge listing={property} variant="pill" />
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <p className="font-data text-[11px] text-dim">
                   {property.lat.toFixed(4)}° N · {property.lng.toFixed(4)}° E
                 </p>
-                <LinkButton
-                  href={`/property/${property.id}`}
-                  size="sm"
-                  className="bg-signal text-background hover:bg-signal/90"
-                >
-                  Open dossier
-                </LinkButton>
+                <div className="flex items-center gap-2">
+                  <LinkButton
+                    href={calculatorHref(property)}
+                    size="sm"
+                    variant="ghost"
+                    className="text-dim hover:text-foreground"
+                  >
+                    Calculate
+                  </LinkButton>
+                  <LinkButton
+                    href={`/property/${property.id}`}
+                    size="sm"
+                    className="bg-signal text-background hover:bg-signal/90"
+                  >
+                    Open dossier
+                  </LinkButton>
+                </div>
               </div>
             </div>
 
@@ -286,14 +312,26 @@ export function PropertyUnfold({
               <p className="font-data text-[10px] uppercase tracking-[0.16em] text-signal">
                 04 · Enquire
               </p>
-              <p className="text-[11px] text-dim">Book a corridor briefing for this parcel.</p>
-              <LinkButton
-                href={`/enquire?property=${property.id}`}
-                size="sm"
-                className="bg-signal px-2 text-background hover:bg-signal/90"
-              >
-                Book call
-              </LinkButton>
+              <p className="text-[11px] text-dim">Talk to us about this parcel now.</p>
+              <div className="flex flex-col gap-1.5">
+                <WhatsAppButton
+                  message={listingEnquiryMessage(property)}
+                  where="unfold_panel"
+                  propertyId={property.id}
+                  size="sm"
+                  className="w-full bg-signal px-2 text-background hover:bg-signal/90"
+                >
+                  WhatsApp
+                </WhatsAppButton>
+                <LinkButton
+                  href={`/enquire?property=${property.id}`}
+                  size="sm"
+                  variant="outline"
+                  className="w-full border-steel-line px-2 text-foreground hover:bg-secondary"
+                >
+                  Book call
+                </LinkButton>
+              </div>
             </div>
           </div>
         </div>
@@ -321,8 +359,20 @@ export function PropertyUnfold({
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Uplift band</p>
-            <p className="mt-1 font-data text-lg text-growth">+{property.growthPct.toFixed(1)}%</p>
+            <div className="mt-1 flex items-center gap-3">
+              <p className="font-data text-lg text-growth">+{property.growthPct.toFixed(1)}%</p>
+              <PriceTrendChart
+                transactions={property.transactions}
+                variant="sparkline"
+                className="h-7 w-20"
+              />
+            </div>
           </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <ProximityBadges listing={property} />
+          <VerificationBadge listing={property} variant="pill" />
         </div>
 
         <div className="mt-5 space-y-3">
@@ -368,26 +418,44 @@ export function PropertyUnfold({
           </div>
         </div>
 
-        <div className="mt-5 flex items-center gap-2 border-t border-steel-line pt-4">
+        <div className="mt-5 flex items-center justify-between gap-2 border-t border-steel-line pt-4">
           <p className="font-data text-[10px] text-dim">
             {property.lat.toFixed(4)}° N · {property.lng.toFixed(4)}° E
           </p>
+          <LinkButton
+            href={calculatorHref(property)}
+            size="sm"
+            variant="ghost"
+            className="text-dim hover:text-foreground"
+          >
+            What would I make?
+          </LinkButton>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <LinkButton
-            href={`/property/${property.id}`}
+        <div className="mt-4 space-y-2">
+          <WhatsAppButton
+            message={listingEnquiryMessage(property)}
+            where="unfold_mobile_card"
+            propertyId={property.id}
             className="h-11 w-full bg-signal text-background hover:bg-signal/90"
           >
-            Open dossier
-          </LinkButton>
-          <LinkButton
-            href={`/enquire?property=${property.id}`}
-            variant="outline"
-            className="h-11 w-full border-steel-line text-foreground hover:bg-secondary"
-          >
-            Book call
-          </LinkButton>
+            WhatsApp about this parcel
+          </WhatsAppButton>
+          <div className="grid grid-cols-2 gap-2">
+            <LinkButton
+              href={`/property/${property.id}`}
+              className="h-11 w-full bg-foreground text-background hover:bg-foreground/85"
+            >
+              Open dossier
+            </LinkButton>
+            <LinkButton
+              href={`/enquire?property=${property.id}`}
+              variant="outline"
+              className="h-11 w-full border-steel-line text-foreground hover:bg-secondary"
+            >
+              Book call
+            </LinkButton>
+          </div>
         </div>
       </div>
     </section>

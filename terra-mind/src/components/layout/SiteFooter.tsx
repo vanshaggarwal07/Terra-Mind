@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { FooterContactLinks } from "@/components/contact/FooterContactLinks";
+
 const PRODUCT_LINKS = [
   { href: "/explore", label: "Explore parcels" },
-  { href: "/calculator", label: "Investment calculator" },
+  { href: "/calculator", label: "Wealth calculator" },
   { href: "/news", label: "Corridor news" },
   { href: "/enquire", label: "Enquire" },
 ];
@@ -12,7 +14,7 @@ const COVERAGE = ["Yamuna Expressway", "Jewar Airport Node", "Noida Extension", 
 export function SiteFooter() {
   return (
     <footer className="border-t border-steel-line bg-panel">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.3fr_1fr_1fr] md:px-6">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.3fr_1fr_1fr_1fr] md:px-6">
         <div>
           <Link href="/" className="flex items-center gap-2.5">
             <span className="inline-flex size-8 items-center justify-center rounded-full bg-foreground font-display text-[13px] text-background">
@@ -53,6 +55,11 @@ export function SiteFooter() {
               </li>
             ))}
           </ul>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-foreground">Talk to us</p>
+          <FooterContactLinks />
         </div>
       </div>
 

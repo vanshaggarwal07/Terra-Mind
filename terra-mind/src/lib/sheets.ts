@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { google } from "googleapis";
 
 import type { ActivityPayload, PropertyListing } from "@/lib/types";
@@ -22,6 +23,17 @@ function getAuth() {
   });
 
   return { auth, spreadsheetId };
+}
+
+/** Optional numeric cell — empty/missing column degrades to undefined. */
+function optionalNumber(cell: string | undefined): number | undefined {
+  if (cell === undefined || cell === "") return undefined;
+  const value = Number(cell);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function optionalString(cell: string | undefined): string | undefined {
+  return cell ? cell : undefined;
 }
 
 function mapRowToListing(row: string[], index: number): PropertyListing | null {
@@ -57,6 +69,16 @@ function mapRowToListing(row: string[], index: number): PropertyListing | null {
       },
     ],
     imageHint: row[20] || `sheet-${index}`,
+    // Optional columns V:AC — missing sheet columns degrade gracefully.
+    distanceToFilmCityKm: optionalNumber(row[21]),
+    driveMinutesToAirport: optionalNumber(row[22]),
+    driveMinutesToFilmCity: optionalNumber(row[23]),
+    reraId: optionalString(row[24]),
+    titleVerified: row[25]
+      ? ["true", "yes", "1"].includes(row[25].toLowerCase())
+      : undefined,
+    verifiedOn: optionalString(row[26]),
+    verificationNotes: optionalString(row[27]),
   };
 }
 
@@ -73,7 +95,7 @@ export async function fetchListingsFromSheet(): Promise<{
     const sheets = google.sheets({ version: "v4", auth: creds.auth });
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: creds.spreadsheetId,
-      range: "Listings!A2:U",
+      range: "Listings!A2:AC",
     });
 
     const rows = response.data.values ?? [];
@@ -90,6 +112,9 @@ export async function fetchListingsFromSheet(): Promise<{
     return { listings: DUMMY_LISTINGS, source: "fallback" };
   }
 }
+
+/** Request-scoped memo so page + generateMetadata share one Sheets fetch. */
+export const getListings = cache(fetchListingsFromSheet);
 
 export async function appendActivityRow(
   payload: ActivityPayload,

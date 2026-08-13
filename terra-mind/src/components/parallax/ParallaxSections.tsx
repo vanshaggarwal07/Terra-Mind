@@ -289,7 +289,7 @@ export function ParallaxSections({
                           variant="outline"
                           className="border-steel text-foreground"
                         >
-                          Run model
+                          Wealth calculator
                         </LinkButton>
                       </div>
                     </div>

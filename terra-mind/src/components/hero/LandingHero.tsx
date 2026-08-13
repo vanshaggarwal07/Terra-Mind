@@ -165,7 +165,7 @@ export function LandingHero() {
               className="h-12 gap-2 border-steel-line px-6 text-base text-foreground hover:bg-secondary"
             >
               <PlayCircle className="size-5" strokeWidth={2} />
-              Run investment model
+              See what your money makes
             </LinkButton>
           </motion.div>
         </motion.div>

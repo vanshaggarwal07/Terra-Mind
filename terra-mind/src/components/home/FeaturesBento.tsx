@@ -94,11 +94,11 @@ export function FeaturesBento() {
         >
           <Calculator className="size-6 text-signal" strokeWidth={2} />
           <h3 className="mt-4 font-display text-lg text-foreground">
-            Investment calculator
+            Wealth calculator
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-dim">
-            Model growth by distance, phase and holding period before you
-            commit capital.
+            See what an amount invested here would have made, and what it could
+            make next, before you commit capital.
           </p>
         </motion.article>
 

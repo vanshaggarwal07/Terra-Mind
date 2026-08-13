@@ -29,6 +29,13 @@ export const DUMMY_LISTINGS: PropertyListing[] = [
       { date: "2026-06", rate: 28500, type: "resale" },
     ],
     imageHint: "expressway-edge",
+    distanceToFilmCityKm: 12.6,
+    driveMinutesToAirport: 26,
+    driveMinutesToFilmCity: 19,
+    titleVerified: true,
+    verifiedOn: "2026-05",
+    verificationNotes:
+      "Registry chain and khatauni cross-checked to 2011. No encumbrance on record.",
   },
   {
     id: "tm-jw-a3-008",
@@ -58,6 +65,13 @@ export const DUMMY_LISTINGS: PropertyListing[] = [
       { date: "2026-05", rate: 42100, type: "resale" },
     ],
     imageHint: "airport-approach",
+    distanceToFilmCityKm: 8.1,
+    driveMinutesToAirport: 9,
+    driveMinutesToFilmCity: 14,
+    titleVerified: true,
+    verifiedOn: "2026-04",
+    verificationNotes:
+      "YEIDA allotment paper trail verified. Lease-to-freehold conversion complete.",
   },
   {
     id: "tm-nd-phi-031",
@@ -86,6 +100,11 @@ export const DUMMY_LISTINGS: PropertyListing[] = [
       { date: "2026-07", rate: 19800, type: "resale" },
     ],
     imageHint: "urban-grid",
+    // Drive times intentionally absent — the UI shows labelled estimates.
+    distanceToFilmCityKm: 26.3,
+    titleVerified: true,
+    verifiedOn: "2026-06",
+    verificationNotes: "Mutation and 12-year encumbrance certificate reviewed.",
   },
   {
     id: "tm-ye-18-102",
@@ -114,6 +133,10 @@ export const DUMMY_LISTINGS: PropertyListing[] = [
       { date: "2026-07", rate: 22400, type: "builder" },
     ],
     imageHint: "survey-field",
+    // Verification intentionally absent — badge renders only when data exists.
+    distanceToFilmCityKm: 16.7,
+    driveMinutesToAirport: 31,
+    driveMinutesToFilmCity: 24,
   },
   {
     id: "tm-da-eco-006",
@@ -141,6 +164,11 @@ export const DUMMY_LISTINGS: PropertyListing[] = [
       { date: "2026-06", rate: 15600, type: "resale" },
     ],
     imageHint: "industrial",
+    distanceToFilmCityKm: 23.9,
+    titleVerified: true,
+    verifiedOn: "2026-03",
+    verificationNotes:
+      "Industrial land-use conversion order and registry verified.",
   },
   {
     id: "tm-ye-mirz-011",
@@ -169,14 +197,24 @@ export const DUMMY_LISTINGS: PropertyListing[] = [
       { date: "2026-07", rate: 31200, type: "resale" },
     ],
     imageHint: "junction",
+    distanceToFilmCityKm: 9.2,
+    driveMinutesToAirport: 20,
+    driveMinutesToFilmCity: 14,
+    titleVerified: true,
+    verifiedOn: "2026-07",
+    verificationNotes:
+      "Registry chain checked to 2014. Boundary demarcation on file.",
   },
 ];
+
+export const FILM_CITY_FILTER_OFF = 50;
 
 export const DEFAULT_FILTERS: ListingFilters = {
   location: "all",
   priceMin: 0,
   priceMax: 100000,
   airportMaxKm: 50,
+  filmCityMaxKm: FILM_CITY_FILTER_OFF,
   phase: "all",
 };
 
@@ -193,6 +231,16 @@ export function filterListings(
     }
     if (item.distanceToAirportKm > filters.airportMaxKm) {
       return false;
+    }
+    // Active Film City filter excludes parcels without known distance —
+    // "within N km" is only claimed when the data exists.
+    if (filters.filmCityMaxKm < FILM_CITY_FILTER_OFF) {
+      if (
+        item.distanceToFilmCityKm === undefined ||
+        item.distanceToFilmCityKm > filters.filmCityMaxKm
+      ) {
+        return false;
+      }
     }
     if (filters.phase !== "all" && item.expresswayPhase !== filters.phase) {
       return false;
@@ -222,4 +270,52 @@ export function formatInr(value: number): string {
 
 export function formatRate(value: number): string {
   return `₹${new Intl.NumberFormat("en-IN").format(value)}/sq.yd`;
+}
+
+/**
+ * Calculator deep link prefilled with this parcel's rate, distance, and
+ * phase. Pass `amount` to also suggest an investment budget.
+ */
+export function calculatorHref(
+  listing: PropertyListing,
+  amount?: number,
+): string {
+  const params = new URLSearchParams({
+    parcel: listing.parcelId,
+    rate: String(listing.pricePerSqYd),
+    distance: String(Math.round(listing.distanceToAirportKm)),
+    phase: listing.expresswayPhase,
+  });
+  if (amount !== undefined) params.set("amount", String(Math.round(amount)));
+  return `/calculator?${params.toString()}`;
+}
+
+/**
+ * Estimated drive time when a measured value is absent: corridor average
+ * ~45 km/h on the expressway network. Callers must label the result as an
+ * estimate — this codebase is explicit about confidence.
+ */
+export function estimateDriveMinutes(distanceKm: number): number {
+  return Math.max(2, Math.round((distanceKm / 45) * 60));
+}
+
+export interface DriveTime {
+  minutes: number;
+  estimated: boolean;
+}
+
+export function driveTimeToAirport(listing: PropertyListing): DriveTime {
+  return listing.driveMinutesToAirport !== undefined
+    ? { minutes: listing.driveMinutesToAirport, estimated: false }
+    : { minutes: estimateDriveMinutes(listing.distanceToAirportKm), estimated: true };
+}
+
+export function driveTimeToFilmCity(listing: PropertyListing): DriveTime | null {
+  if (listing.distanceToFilmCityKm === undefined) return null;
+  return listing.driveMinutesToFilmCity !== undefined
+    ? { minutes: listing.driveMinutesToFilmCity, estimated: false }
+    : {
+        minutes: estimateDriveMinutes(listing.distanceToFilmCityKm),
+        estimated: true,
+      };
 }

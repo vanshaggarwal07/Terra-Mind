@@ -12,8 +12,8 @@ const STEPS = [
     body: "Browse matches with spot rate, confidence band, and infrastructure timeline attached to every parcel.",
   },
   {
-    title: "Model, enquire, close",
-    body: "Run the investment calculator, then book a briefing call with a corridor specialist to close.",
+    title: "Calculate, enquire, close",
+    body: "Run the wealth calculator on your parcel, then book a briefing call with a corridor specialist to close.",
   },
 ];
 

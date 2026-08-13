@@ -4,7 +4,22 @@ import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 
-const QUOTES = [
+interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  initials: string;
+  featured: boolean;
+  /**
+   * TODO: drop real client video testimonials here — put the files in
+   * /public/testimonials/ and set e.g.
+   * video: { src: "/testimonials/ritika.mp4", poster: "/testimonials/ritika-poster.jpg" }
+   * The card renders a lazy player (no autoplay, native controls) when set.
+   */
+  video?: { src: string; poster: string };
+}
+
+const QUOTES: Testimonial[] = [
   {
     quote:
       "The valuation confidence band changed how I negotiate. I walked into every deal knowing the real range, not the broker's number.",
@@ -57,6 +72,18 @@ export function Testimonials() {
                   : "border-steel-line bg-panel",
               )}
             >
+              {item.video && (
+                <video
+                  controls
+                  preload="none"
+                  playsInline
+                  poster={item.video.poster}
+                  className="mb-4 aspect-video w-full rounded-2xl border border-steel-line bg-background object-cover"
+                  aria-label={`Video testimonial from ${item.name}`}
+                >
+                  <source src={item.video.src} type="video/mp4" />
+                </video>
+              )}
               <blockquote
                 className={cn(
                   "text-[15px] leading-relaxed",

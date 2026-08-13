@@ -3,6 +3,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { BrowseFilters } from "@/components/browse/BrowseFilters";
+import { PriceAlertForm } from "@/components/forms/PriceAlertForm";
 import { PropertyUnfold } from "@/components/unfold/PropertyUnfold";
 import { logActivity } from "@/lib/activity";
 import {
@@ -34,6 +35,7 @@ export function BrowseStream({ listings, source }: BrowseStreamProps) {
         location: filters.location,
         priceMax: filters.priceMax,
         airportMaxKm: filters.airportMaxKm,
+        filmCityMaxKm: filters.filmCityMaxKm,
         phase: filters.phase,
         resultCount: visible.length,
       },
@@ -90,6 +92,20 @@ export function BrowseStream({ listings, source }: BrowseStreamProps) {
           />
         ))
       )}
+
+      <div className="mx-auto max-w-6xl px-4 py-14 md:px-6">
+        <div className="steel-frame grid gap-6 rounded-3xl p-6 md:grid-cols-[1fr_1fr] md:items-center md:p-10">
+          <div>
+            <h2 className="font-display text-2xl leading-tight text-foreground">
+              Not ready to pick a parcel?
+            </h2>
+            <p className="mt-2 max-w-md text-sm text-dim">
+              Leave a number and get one message when tracked rates move.
+            </p>
+          </div>
+          <PriceAlertForm where="explore_stream_end" />
+        </div>
+      </div>
     </div>
   );
 }

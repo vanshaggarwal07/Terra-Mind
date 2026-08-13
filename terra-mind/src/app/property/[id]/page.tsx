@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { CallButton, WhatsAppButton } from "@/components/contact/ContactButtons";
+import { PropertyActionBar } from "@/components/contact/PropertyActionBar";
+import { PriceAlertForm } from "@/components/forms/PriceAlertForm";
+import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { LinkButton } from "@/components/shared/LinkButton";
+import { PriceTrendChart } from "@/components/shared/PriceTrendChart";
+import { ProximityBadges } from "@/components/shared/ProximityBadges";
+import { VerificationBadge } from "@/components/shared/VerificationBadge";
 import { PropertyUnfold } from "@/components/unfold/PropertyUnfold";
-import { formatRate, getListingById } from "@/lib/listings";
-import { fetchListingsFromSheet } from "@/lib/sheets";
+import { listingEnquiryMessage } from "@/lib/contact";
+import { listingImages } from "@/lib/listing-images";
+import { calculatorHref, formatRate, getListingById } from "@/lib/listings";
+import { getListings } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -11,14 +21,73 @@ interface PropertyPageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({
+  params,
+}: PropertyPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const { listings } = await getListings();
+  const property = getListingById(id, listings);
+  if (!property) return { title: "Parcel not found" };
+
+  const title = `${property.name} · ${formatRate(property.pricePerSqYd)}`;
+  const description = `${property.location}: ${property.areaSqYd.toLocaleString("en-IN")} sq.yd at ${formatRate(property.pricePerSqYd)}, ${property.distanceToAirportKm.toFixed(1)} km from Jewar Airport. Growth +${property.growthPct.toFixed(1)}% with sourced infrastructure timeline on Terra-Mind.`;
+  const image = listingImages(property)[0];
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `/property/${property.id}`,
+      images: [{ url: image.src, width: 1200, height: 630, alt: image.alt }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image.src],
+    },
+  };
+}
+
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params;
-  const { listings } = await fetchListingsFromSheet();
+  const { listings } = await getListings();
   const property = getListingById(id, listings);
   if (!property) notFound();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: property.name,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/property/${property.id}`,
+    description: property.valuationNote,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: property.locality,
+      addressRegion: "Uttar Pradesh",
+      addressCountry: "IN",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: property.lat,
+      longitude: property.lng,
+    },
+    offers: {
+      "@type": "Offer",
+      price: property.pricePerSqYd * property.areaSqYd,
+      priceCurrency: "INR",
+    },
+  };
+
   return (
-    <div>
+    <div className="pb-20 md:pb-0">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
         <p className="font-data text-[11px] uppercase tracking-[0.22em] text-signal">
           Property dossier
@@ -39,10 +108,27 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             </p>
           </div>
         </div>
+        <ProximityBadges listing={property} className="mt-4" />
         <div className="mt-6 flex flex-wrap gap-3">
+          <WhatsAppButton
+            message={listingEnquiryMessage(property)}
+            where="property_header"
+            propertyId={property.id}
+            className="bg-signal text-background hover:bg-signal/90"
+          >
+            WhatsApp about this parcel
+          </WhatsAppButton>
+          <CallButton
+            where="property_header"
+            propertyId={property.id}
+            className="border-steel-line text-foreground hover:bg-secondary"
+          >
+            Call now
+          </CallButton>
           <LinkButton
             href={`/enquire?property=${property.id}`}
-            className="bg-signal text-background hover:bg-signal/90"
+            variant="outline"
+            className="border-steel-line text-foreground hover:bg-secondary"
           >
             Enquire on this parcel
           </LinkButton>
@@ -50,6 +136,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             Back to explore
           </LinkButton>
         </div>
+
+        <PropertyGallery listing={property} className="mt-8" />
+        <VerificationBadge listing={property} className="mt-6 max-w-xl" />
       </div>
 
       <PropertyUnfold property={property} scrollLength="340%" />
@@ -70,12 +159,13 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </ul>
         </article>
         <article className="steel-frame p-5">
-          <h2 className="font-display text-xl text-foreground">Transaction ledger</h2>
-          <ul className="mt-4 space-y-3">
+          <h2 className="font-display text-xl text-foreground">Price movement</h2>
+          <PriceTrendChart transactions={property.transactions} className="mt-4" />
+          <ul className="mt-5 border-t border-steel-line pt-1">
             {property.transactions.map((tx) => (
               <li
                 key={`${tx.date}-${tx.rate}`}
-                className="flex items-center justify-between border-t border-steel-line pt-3"
+                className="flex items-center justify-between py-2.5"
               >
                 <div>
                   <p className="font-data text-sm text-foreground">{tx.date}</p>
@@ -85,8 +175,32 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               </li>
             ))}
           </ul>
+          <LinkButton
+            href={calculatorHref(property)}
+            variant="outline"
+            className="mt-4 w-full border-steel-line text-foreground hover:bg-secondary"
+          >
+            See what this parcel pays in the wealth calculator
+          </LinkButton>
         </article>
       </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-14 md:px-6">
+        <div className="steel-frame grid gap-6 rounded-3xl p-6 md:grid-cols-[1fr_1fr] md:items-center md:p-10">
+          <div>
+            <h2 className="font-display text-2xl leading-tight text-foreground">
+              Watching this parcel?
+            </h2>
+            <p className="mt-2 max-w-md text-sm text-dim">
+              Get one message when {property.parcelId} or nearby parcels
+              re-price.
+            </p>
+          </div>
+          <PriceAlertForm where="property_page" propertyId={property.id} />
+        </div>
+      </section>
+
+      <PropertyActionBar property={property} />
     </div>
   );
 }

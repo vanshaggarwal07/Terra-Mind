@@ -22,7 +22,11 @@ export function Counter({ value, suffix = "", prefix = "", decimals = 0, classNa
       duration: 1.4,
       ease: [0.16, 1, 0.3, 1],
       onUpdate(latest) {
-        node.textContent = `${prefix}${latest.toFixed(decimals)}${suffix}`;
+        const formatted = latest.toLocaleString("en-IN", {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+        node.textContent = `${prefix}${formatted}${suffix}`;
       },
     });
     return () => controls.stop();

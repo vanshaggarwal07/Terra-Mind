@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { IBM_Plex_Mono } from "next/font/google";
 
+import { ContactDock } from "@/components/contact/ContactDock";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -31,10 +32,45 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_DESCRIPTION =
+  "Live land valuations, verified plots and infrastructure timelines along the Yamuna Expressway, Jewar Airport and Film City corridor. Track rates, run projections, talk to us on WhatsApp.";
+
 export const metadata: Metadata = {
-  title: "Terra-Mind · Corridor property intelligence",
-  description:
-    "Precision property intelligence for the Noida, Yamuna Expressway and Jewar Airport corridor.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Terra-Mind · Plots near Jewar Airport & Yamuna Expressway",
+    template: "%s · Terra-Mind",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "Jewar Airport plots",
+    "Yamuna Expressway land",
+    "Noida International Airport property",
+    "Film City Sector 21 YEIDA",
+    "land investment Noida corridor",
+  ],
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: "Terra-Mind",
+    title: "Terra-Mind · Plots near Jewar Airport & Yamuna Expressway",
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/marketing/hero-expressway.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Yamuna Expressway corridor at sunset",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terra-Mind · Plots near Jewar Airport & Yamuna Expressway",
+    description: SITE_DESCRIPTION,
+    images: ["/marketing/hero-expressway.jpg"],
+  },
 };
 
 export const viewport: Viewport = {
@@ -60,6 +96,7 @@ export default function RootLayout({
           <SiteHeader />
           <main className="flex-1 overflow-x-hidden">{children}</main>
           <SiteFooter />
+          <ContactDock />
         </ThemeProvider>
       </body>
     </html>
