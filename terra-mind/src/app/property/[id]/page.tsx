@@ -9,7 +9,6 @@ import { LinkButton } from "@/components/shared/LinkButton";
 import { PriceTrendChart } from "@/components/shared/PriceTrendChart";
 import { ProximityBadges } from "@/components/shared/ProximityBadges";
 import { VerificationBadge } from "@/components/shared/VerificationBadge";
-import { PropertyUnfold } from "@/components/unfold/PropertyUnfold";
 import { listingEnquiryMessage } from "@/lib/contact";
 import { listingImages } from "@/lib/listing-images";
 import { calculatorHref, formatRate, getListingById } from "@/lib/listings";
@@ -141,7 +140,47 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         <VerificationBadge listing={property} className="mt-6 max-w-xl" />
       </div>
 
-      <PropertyUnfold property={property} scrollLength="340%" />
+      <section className="mx-auto max-w-6xl px-4 md:px-6">
+        <div className="steel-frame rounded-3xl p-6 md:p-8">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <p className="font-data text-[10px] uppercase tracking-[0.18em] text-dim">
+                Plot size
+              </p>
+              <p className="mt-1.5 font-data text-lg text-foreground">
+                {property.areaSqYd.toLocaleString("en-IN")} sq.yd
+              </p>
+            </div>
+            <div>
+              <p className="font-data text-[10px] uppercase tracking-[0.18em] text-dim">
+                Expressway phase
+              </p>
+              <p className="mt-1.5 font-data text-lg text-foreground">
+                Phase {property.expresswayPhase}
+              </p>
+            </div>
+            <div>
+              <p className="font-data text-[10px] uppercase tracking-[0.18em] text-dim">
+                Position
+              </p>
+              <p className="mt-1.5 font-data text-lg text-foreground">
+                {property.lat.toFixed(4)}° N, {property.lng.toFixed(4)}° E
+              </p>
+            </div>
+            <div>
+              <p className="font-data text-[10px] uppercase tracking-[0.18em] text-dim">
+                Model confidence
+              </p>
+              <p className="mt-1.5 font-data text-lg text-growth">
+                {property.confidencePct}%
+              </p>
+            </div>
+          </div>
+          <p className="mt-6 border-t border-steel-line pt-4 text-sm text-dim">
+            {property.valuationNote}
+          </p>
+        </div>
+      </section>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-4 py-12 md:grid-cols-2 md:px-6">
         <article className="steel-frame p-5">

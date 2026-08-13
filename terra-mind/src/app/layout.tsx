@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { IBM_Plex_Mono } from "next/font/google";
 
 import { ContactDock } from "@/components/contact/ContactDock";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -22,13 +21,6 @@ const generalSans = localFont({
     { path: "../fonts/GeneralSans-VariableItalic.woff2", weight: "200 700", style: "italic" },
   ],
   variable: "--font-body",
-  display: "swap",
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-mono",
   display: "swap",
 });
 
@@ -88,7 +80,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${clashDisplay.variable} ${generalSans.variable} ${plexMono.variable} h-full`}
+      className={`${clashDisplay.variable} ${generalSans.variable} h-full`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col overflow-x-hidden font-sans">

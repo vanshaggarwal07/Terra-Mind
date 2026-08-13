@@ -20,11 +20,11 @@ npm run build
 
 | Route | Purpose |
 |---|---|
-| `/` | Cinematic landing + signature unfold demo |
-| `/explore` | Filtered parcel stream (one pinned unfold per listing) |
+| `/` | Cinematic landing |
+| `/explore` | Filtered listings grid + 3D corridor map (react-three-fiber) |
 | `/news` | Corridor Signal Feed (aggregated gov + news) |
-| `/calculator` | Investment model + react-three-fiber parcel block |
-| `/property/[id]` | Full dossier + unfold |
+| `/calculator` | Investment model |
+| `/property/[id]` | Full parcel dossier |
 | `/enquire` | Enquiry form → `POST /api/sheets-sync` |
 
 ## Corridor Signal Feed
