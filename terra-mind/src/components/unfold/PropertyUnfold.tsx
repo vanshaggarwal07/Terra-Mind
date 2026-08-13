@@ -43,66 +43,82 @@ export function PropertyUnfold({
 
       const mm = gsap.matchMedia();
 
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(root.querySelectorAll("[data-panel]"), {
-          clearProps: "all",
-          autoAlpha: 1,
-          rotationX: 0,
-          rotationY: 0,
-          scale: 1,
-        });
-        gsap.set(root.querySelector("[data-cover]"), { autoAlpha: 0, scale: 0.9 });
-        setActiveStage(4);
-      });
+      // The pinned 3D unfold only makes sense once the stage has room to
+      // breathe (tablet/desktop). On narrow screens the same five stages
+      // render as a normal, non-pinned stacked card (see JSX below), so
+      // mobile is left out of this timeline entirely rather than pinning
+      // scroll for a cramped, unreadable animation.
+      mm.add(
+        {
+          reduceMotion: "(prefers-reduced-motion: reduce)",
+          desktopMotion: "(prefers-reduced-motion: no-preference) and (min-width: 768px)",
+        },
+        (context) => {
+          const { reduceMotion, desktopMotion } = context.conditions ?? {};
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const cover = root.querySelector("[data-cover]");
-        const top = root.querySelector('[data-panel="top"]');
-        const bottom = root.querySelector('[data-panel="bottom"]');
-        const left = root.querySelector('[data-panel="left"]');
-        const right = root.querySelector('[data-panel="right"]');
-        const stage = root.querySelector("[data-stage]");
+          if (reduceMotion) {
+            gsap.set(root.querySelectorAll("[data-panel]"), {
+              clearProps: "all",
+              autoAlpha: 1,
+              rotationX: 0,
+              rotationY: 0,
+              scale: 1,
+            });
+            gsap.set(root.querySelector("[data-cover]"), { autoAlpha: 0, scale: 0.9 });
+            setActiveStage(4);
+            return;
+          }
 
-        gsap.set(stage, { transformPerspective: 1400 });
-        gsap.set([top, bottom, left, right], { transformOrigin: "center center" });
-        gsap.set(top, { rotationX: 0, transformOrigin: "top center" });
-        gsap.set(bottom, { rotationX: 0, transformOrigin: "bottom center" });
-        gsap.set(left, { rotationY: 0, transformOrigin: "left center" });
-        gsap.set(right, { rotationY: 0, transformOrigin: "right center" });
+          if (!desktopMotion) return;
 
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: root,
-            start: "top top",
-            end: `+=${scrollLength}`,
-            pin: true,
-            scrub: 0.65,
-            anticipatePin: 1,
-            refreshPriority: -index,
-            onUpdate: (self) => {
-              const p = self.progress;
-              if (p < 0.18) setActiveStage(0);
-              else if (p < 0.38) setActiveStage(1);
-              else if (p < 0.58) setActiveStage(2);
-              else if (p < 0.78) setActiveStage(3);
-              else setActiveStage(4);
+          const cover = root.querySelector("[data-cover]");
+          const top = root.querySelector('[data-panel="top"]');
+          const bottom = root.querySelector('[data-panel="bottom"]');
+          const left = root.querySelector('[data-panel="left"]');
+          const right = root.querySelector('[data-panel="right"]');
+          const stage = root.querySelector("[data-stage]");
+
+          gsap.set(stage, { transformPerspective: 1400 });
+          gsap.set([top, bottom, left, right], { transformOrigin: "center center" });
+          gsap.set(top, { rotationX: 0, transformOrigin: "top center" });
+          gsap.set(bottom, { rotationX: 0, transformOrigin: "bottom center" });
+          gsap.set(left, { rotationY: 0, transformOrigin: "left center" });
+          gsap.set(right, { rotationY: 0, transformOrigin: "right center" });
+
+          const tl = gsap.timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: {
+              trigger: root,
+              start: "top top",
+              end: `+=${scrollLength}`,
+              pin: true,
+              scrub: 0.65,
+              anticipatePin: 1,
+              refreshPriority: -index,
+              onUpdate: (self) => {
+                const p = self.progress;
+                if (p < 0.18) setActiveStage(0);
+                else if (p < 0.38) setActiveStage(1);
+                else if (p < 0.58) setActiveStage(2);
+                else if (p < 0.78) setActiveStage(3);
+                else setActiveStage(4);
+              },
             },
-          },
-        });
+          });
 
-        tl.to(cover, { autoAlpha: 0, scale: 0.82, y: -24, duration: 0.18 }, 0)
-          .to(top, { rotationX: -102, autoAlpha: 1, duration: 0.22 }, 0.12)
-          .to(bottom, { rotationX: 102, autoAlpha: 1, duration: 0.22 }, 0.22)
-          .to(left, { rotationY: 98, autoAlpha: 1, duration: 0.22 }, 0.34)
-          .to(right, { rotationY: -98, autoAlpha: 1, duration: 0.22 }, 0.46)
-          .to({}, { duration: 0.2 });
+          tl.to(cover, { autoAlpha: 0, scale: 0.82, y: -24, duration: 0.18 }, 0)
+            .to(top, { rotationX: -102, autoAlpha: 1, duration: 0.22 }, 0.12)
+            .to(bottom, { rotationX: 102, autoAlpha: 1, duration: 0.22 }, 0.22)
+            .to(left, { rotationY: 98, autoAlpha: 1, duration: 0.22 }, 0.34)
+            .to(right, { rotationY: -98, autoAlpha: 1, duration: 0.22 }, 0.46)
+            .to({}, { duration: 0.2 });
 
-        return () => {
-          tl.scrollTrigger?.kill();
-          tl.kill();
-        };
-      });
+          return () => {
+            tl.scrollTrigger?.kill();
+            tl.kill();
+          };
+        },
+      );
 
       return () => mm.revert();
     },
@@ -115,7 +131,8 @@ export function PropertyUnfold({
       className={cn("relative z-10", className)}
       aria-label={`Parcel unfold ${property.parcelId}`}
     >
-      <div className="relative flex h-svh items-center justify-center overflow-hidden px-4 md:px-8">
+      {/* Tablet / desktop — pinned 3D instrument unfold, scroll-scrubbed */}
+      <div className="relative hidden h-svh items-center justify-center overflow-hidden px-4 md:flex md:px-8">
         <div
           className="pointer-events-none absolute inset-0 survey-hatch opacity-40"
           aria-hidden
@@ -126,7 +143,7 @@ export function PropertyUnfold({
             <li key={stage.id} className="flex items-center justify-end gap-2">
               <span
                 className={cn(
-                  "hidden font-data text-[10px] uppercase tracking-[0.18em] md:inline",
+                  "font-data text-[10px] uppercase tracking-[0.18em]",
                   i === activeStage ? "text-signal" : "text-dim",
                 )}
               >
@@ -279,6 +296,98 @@ export function PropertyUnfold({
               </LinkButton>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile — same five stages, presented as a normal-flow stacked card (no pin, no 3D) */}
+      <div className="steel-frame relative mx-4 my-3 overflow-hidden rounded-3xl px-4 py-6 md:hidden">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-data text-[10px] uppercase tracking-[0.22em] text-dim">
+              Parcel / core
+            </p>
+            <h3 className="mt-2 font-display text-xl text-foreground">{property.name}</h3>
+            <p className="mt-1 text-sm text-dim">{property.location}</p>
+          </div>
+          <p className="font-data text-xs text-signal">{property.parcelId}</p>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-4 border-t border-steel-line pt-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Spot rate</p>
+            <p className="mt-1 font-data text-lg text-foreground">
+              {formatRate(property.pricePerSqYd)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-dim">Uplift band</p>
+            <p className="mt-1 font-data text-lg text-growth">+{property.growthPct.toFixed(1)}%</p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          <div className="rounded-2xl border border-steel-line bg-background/60 p-4">
+            <p className="font-data text-[10px] uppercase tracking-[0.2em] text-signal">
+              01 · Live valuation
+            </p>
+            <p className="mt-1 font-data text-sm text-foreground">
+              {formatRate(property.pricePerSqYd)} · conf{" "}
+              <span className="text-growth">{property.confidencePct}%</span>
+            </p>
+            <p className="mt-1 text-xs text-dim">{property.valuationNote}</p>
+          </div>
+
+          <div className="rounded-2xl border border-steel-line bg-background/60 p-4">
+            <p className="font-data text-[10px] uppercase tracking-[0.2em] text-signal">
+              02 · Infrastructure timeline
+            </p>
+            <ul className="mt-1 space-y-0.5">
+              {property.infraTimeline.slice(0, 2).map((item) => (
+                <li key={`${item.year}-${item.event}`} className="font-data text-[11px] text-foreground">
+                  <span className="text-growth">{item.year}</span> — {item.event}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-steel-line bg-background/60 p-4">
+            <p className="font-data text-[10px] uppercase tracking-[0.16em] text-signal">
+              03 · Recent transactions
+            </p>
+            <ul className="mt-2 space-y-1.5">
+              {property.transactions.slice(0, 3).map((tx) => (
+                <li
+                  key={tx.date}
+                  className="flex items-center justify-between gap-3 font-data text-[11px] text-foreground"
+                >
+                  <span>{tx.date}</span>
+                  <span className="text-dim">{formatRate(tx.rate)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center gap-2 border-t border-steel-line pt-4">
+          <p className="font-data text-[10px] text-dim">
+            {property.lat.toFixed(4)}° N · {property.lng.toFixed(4)}° E
+          </p>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <LinkButton
+            href={`/property/${property.id}`}
+            className="h-11 w-full bg-signal text-background hover:bg-signal/90"
+          >
+            Open dossier
+          </LinkButton>
+          <LinkButton
+            href={`/enquire?property=${property.id}`}
+            variant="outline"
+            className="h-11 w-full border-steel-line text-foreground hover:bg-secondary"
+          >
+            Book call
+          </LinkButton>
         </div>
       </div>
     </section>

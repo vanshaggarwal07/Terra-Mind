@@ -85,6 +85,7 @@ export function InvestmentCalculator() {
               onValueChange={(value) =>
                 setDistanceKm(Number(Array.isArray(value) ? value[0] : value))
               }
+              className="py-3"
             />
           </div>
 
@@ -123,6 +124,7 @@ export function InvestmentCalculator() {
               onValueChange={(value) =>
                 setYears(Number(Array.isArray(value) ? value[0] : value))
               }
+              className="py-3"
             />
           </div>
 
@@ -139,6 +141,7 @@ export function InvestmentCalculator() {
               onValueChange={(value) =>
                 setBaseRate(Number(Array.isArray(value) ? value[0] : value))
               }
+              className="py-3"
             />
           </div>
         </div>

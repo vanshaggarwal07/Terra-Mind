@@ -52,10 +52,10 @@ export function LiveDemo() {
                 type="button"
                 onClick={() => setActiveRegion(region)}
                 className={cn(
-                  "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+                  "rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
                   activeRegion === region
                     ? "bg-foreground text-background"
-                    : "bg-secondary text-dim hover:text-foreground",
+                    : "bg-secondary text-dim hover:text-foreground active:text-foreground",
                 )}
               >
                 {region}
@@ -153,17 +153,17 @@ export function LiveDemo() {
                     Verified parcel, corridor phase {selected.expresswayPhase}
                   </div>
 
-                  <div className="mt-auto flex gap-2 pt-6">
+                  <div className="mt-auto flex flex-col gap-2 pt-6 sm:flex-row">
                     <LinkButton
                       href={`/property/${selected.id}`}
-                      className="flex-1 bg-foreground text-background hover:bg-foreground/85"
+                      className="h-11 flex-1 bg-foreground text-background hover:bg-foreground/85"
                     >
                       Open full dossier
                     </LinkButton>
                     <LinkButton
                       href={`/enquire?property=${selected.id}`}
                       variant="outline"
-                      className="border-steel-line text-foreground hover:bg-secondary"
+                      className="h-11 border-steel-line text-foreground hover:bg-secondary"
                     >
                       Book call
                     </LinkButton>

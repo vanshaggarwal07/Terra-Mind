@@ -127,7 +127,7 @@ export function EnquireForm() {
       <Button
         type="submit"
         disabled={pending}
-        className="w-full rounded-sm bg-signal text-background hover:bg-signal/90"
+        className="h-11 w-full rounded-sm bg-signal text-background hover:bg-signal/90"
       >
         {pending ? "Transmitting…" : "Submit enquiry"}
       </Button>

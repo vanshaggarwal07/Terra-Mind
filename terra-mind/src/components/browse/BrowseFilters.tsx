@@ -30,7 +30,7 @@ export function BrowseFilters({ filters, regions, onChange }: BrowseFiltersProps
             onChange({ ...filters, location: String(value ?? "all") })
           }
         >
-          <SelectTrigger className="rounded-sm border-steel-line bg-background">
+          <SelectTrigger className="h-10 w-full rounded-sm border-steel-line bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="rounded-sm border-steel-line bg-panel">
@@ -95,7 +95,7 @@ export function BrowseFilters({ filters, regions, onChange }: BrowseFiltersProps
             })
           }
         >
-          <SelectTrigger className="rounded-sm border-steel-line bg-background">
+          <SelectTrigger className="h-10 w-full rounded-sm border-steel-line bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="rounded-sm border-steel-line bg-panel">

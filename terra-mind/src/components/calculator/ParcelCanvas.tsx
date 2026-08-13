@@ -15,6 +15,7 @@ import {
   CatmullRomCurve3,
   type Group,
   type Mesh,
+  TOUCH,
   Vector3,
 } from "three";
 
@@ -246,6 +247,10 @@ function Scene({ height, upliftPct, distanceKm }: ParcelCanvasProps) {
         minPolarAngle={0.4}
         maxPolarAngle={Math.PI / 2.2}
         target={[0, 0.2, 0]}
+        // Single-finger touch is left to the browser (page scroll); only a
+        // two-finger gesture orbits/zooms, so the widget never traps scroll
+        // on mobile. Desktop mouse-drag rotation (mouseButtons) is untouched.
+        touches={{ ONE: undefined, TWO: TOUCH.DOLLY_ROTATE }}
         makeDefault
       />
     </>
@@ -302,7 +307,7 @@ export function ParcelCanvas({
       ) : (
         <CanvasErrorBoundary onError={() => setWebglFailed(true)}>
           <Canvas
-            className="h-full w-full touch-none"
+            className="h-full w-full touch-pan-y"
             camera={{ position: [6.2, 6.8, 7.4], fov: 36, near: 0.1, far: 80 }}
             dpr={[1, 1.5]}
             gl={{
@@ -346,6 +351,11 @@ export function ParcelCanvas({
           {distanceKm.toFixed(0)} km → Jewar
         </p>
       </div>
+      {!webglFailed ? (
+        <p className="pointer-events-none absolute right-3 top-3 rounded-full bg-background/70 px-2.5 py-1 font-data text-[9px] uppercase tracking-[0.14em] text-dim backdrop-blur-sm md:hidden">
+          Two fingers to rotate
+        </p>
+      ) : null}
     </div>
   );
 }

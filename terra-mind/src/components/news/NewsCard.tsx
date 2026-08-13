@@ -46,7 +46,7 @@ export function NewsCard({
         "news-card group relative overflow-hidden rounded-3xl border bg-panel transition-all duration-300",
         featured
           ? "border-signal/25 soft-shadow"
-          : "border-steel-line hover:border-steel hover:shadow-md",
+          : "border-steel-line hover:border-steel hover:shadow-md active:border-steel",
         open && "border-steel",
       )}
     >
@@ -77,7 +77,7 @@ export function NewsCard({
               {item.sourceName}
             </span>
             {categoryLabel ? (
-              <span className="hidden rounded-full bg-secondary px-2.5 py-1 text-xs capitalize text-dim sm:inline-flex">
+              <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs capitalize text-dim">
                 {categoryLabel}
               </span>
             ) : null}
@@ -107,7 +107,7 @@ export function NewsCard({
           </p>
         ) : null}
 
-        <span className="inline-flex items-center gap-1 text-xs font-medium text-dim transition-colors group-hover:text-foreground">
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-dim transition-colors group-hover:text-foreground group-active:text-foreground">
           {open ? "Hide details" : "Read brief"}
           <ChevronDown
             className={cn("size-3.5 transition-transform", open && "rotate-180")}

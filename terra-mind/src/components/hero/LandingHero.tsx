@@ -24,7 +24,7 @@ export function LandingHero() {
       />
 
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
-        {/* Floating corridor photography */}
+        {/* Floating corridor photography — desktop/tablet: pinned to the four corners */}
         <motion.div
           initial={{ opacity: 0, y: 24, rotate: -6 }}
           animate={{ opacity: 1, y: 0, rotate: -6 }}
@@ -83,6 +83,35 @@ export function LandingHero() {
             height={360}
             className="aspect-[4/3] w-full object-cover"
           />
+        </motion.div>
+
+        {/* Mobile: same four photos as a fanned deck above the headline, in flow */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-7 flex items-center justify-center md:hidden"
+        >
+          {[
+            { src: "/marketing/hero-plots.jpg", alt: "Plotted land parcels along the corridor", rotate: -8, z: 0 },
+            { src: "/marketing/hero-airport.jpg", alt: "Jewar Airport aerotropolis development", rotate: -3, z: 1 },
+            { src: "/marketing/hero-expressway.jpg", alt: "Yamuna Expressway corridor at sunset", rotate: 3, z: 2 },
+            { src: "/marketing/hero-township.jpg", alt: "Landscaped township development along the corridor", rotate: 8, z: 3 },
+          ].map((photo, index) => (
+            <div
+              key={photo.src}
+              style={{ rotate: `${photo.rotate}deg`, zIndex: photo.z, marginLeft: index === 0 ? 0 : -20 }}
+              className="relative w-16 shrink-0 overflow-hidden rounded-2xl border border-steel-line shadow-lg"
+            >
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                width={200}
+                height={150}
+                className="aspect-[4/3] w-full object-cover"
+              />
+            </div>
+          ))}
         </motion.div>
 
         {/* Hero copy */}

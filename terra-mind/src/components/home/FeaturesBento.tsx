@@ -41,7 +41,7 @@ export function FeaturesBento() {
             Spot rate and a confidence band on every parcel, recalculated from
             corridor comps and infra proximity as the market moves.
           </p>
-          <p className="mt-6 font-display text-5xl text-foreground">78%</p>
+          <p className="mt-6 font-display text-4xl text-foreground sm:text-5xl">78%</p>
           <p className="mt-1 text-[13px] text-dim">average valuation confidence</p>
         </motion.article>
 

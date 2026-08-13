@@ -208,7 +208,7 @@ export function NewsFeed({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search keyword…"
-                className="w-full rounded-full border border-steel-line bg-secondary/60 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-dim outline-none transition-colors focus:border-signal focus:bg-panel"
+                className="w-full rounded-full border border-steel-line bg-secondary/60 py-2.5 pl-10 pr-4 text-base text-foreground placeholder:text-dim outline-none transition-colors focus:border-signal focus:bg-panel md:text-sm"
               />
             </label>
           </div>
