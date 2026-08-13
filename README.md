@@ -17,6 +17,4 @@ npm run dev                  # http://localhost:3000
 
 ```
 terra-mind/   Next.js app (frontend + API routes)
-docs/         frontend design system
-file2/        design prompts + hero prototype
 ```
